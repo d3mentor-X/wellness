@@ -1,5 +1,6 @@
-import { useState } from 'react'
 import { useAuth } from '../context/useAuth'
+import { useDailyActivity } from '../hooks/useDailyActivity'
+import { useWorkouts } from '../hooks/useWorkouts'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -21,8 +22,8 @@ import {
 
 export default function Dashboard({ onNavigate }) {
   const { user, profile, membership } = useAuth()
-  const [workoutChecked, setWorkoutChecked] = useState(true)
-  const [waterGlasses, setWaterGlasses] = useState(6)
+  const { todayActivity, updateTodayWater, toggleTodayWorkout } = useDailyActivity()
+  const { workouts } = useWorkouts()
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
   const firstName = displayName.split(' ')[0]
@@ -33,6 +34,19 @@ export default function Dashboard({ onNavigate }) {
       : userRole === 'instructor'
       ? 'Instructor'
       : 'Member'
+
+  const todayDate = new Date().toISOString().split('T')[0]
+  const todayWorkout = workouts.find(
+    (w) => w.workout_date?.split('T')[0] === todayDate
+  )
+  const isWorkoutDone = !!todayWorkout || todayActivity.workout_completed
+
+  const currentSteps = todayActivity.steps || 0
+  const stepGoal = 10000
+  const stepPercent = Math.min(100, Math.round((currentSteps / stepGoal) * 100))
+  const remainingSteps = Math.max(0, stepGoal - currentSteps)
+  const distanceKm = ((currentSteps * 0.75) / 1000).toFixed(1)
+  const burnedKcal = Math.round(currentSteps * 0.04)
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -56,11 +70,12 @@ export default function Dashboard({ onNavigate }) {
               </Badge>
             </div>
             <p className="text-xs sm:text-sm text-[#71808C]">
-              You're on track to hit your weekly fitness target!
+              {isWorkoutDone
+                ? 'Great job! You logged a workout session today.'
+                : 'Ready when you are. Start your fitness session today!'}
             </p>
           </div>
         </div>
-
 
         {/* Streak & XP Concept */}
         <div className="flex items-center gap-3 self-start sm:self-center">
@@ -104,7 +119,7 @@ export default function Dashboard({ onNavigate }) {
       <div className="space-y-4">
         <SectionHeader
           title="Today's Progress"
-          subtitle="Your daily movement, hydration, and habits."
+          subtitle="Your daily movement, hydration, and training logs."
           icon={TrendingUp}
           action={
             <Button
@@ -122,26 +137,34 @@ export default function Dashboard({ onNavigate }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {/* Workout Status Card */}
           <Card
-            variant={workoutChecked ? 'mintTint' : 'default'}
+            variant={isWorkoutDone ? 'mintTint' : 'default'}
             className="p-5 flex flex-col justify-between space-y-4"
           >
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <Badge variant={workoutChecked ? 'mint' : 'coral'} size="sm">
-                  {workoutChecked ? 'Workout Complete' : 'Workout Pending'}
+                <Badge variant={isWorkoutDone ? 'mint' : 'coral'} size="sm">
+                  {isWorkoutDone ? 'Workout Complete' : 'Workout Pending'}
                 </Badge>
                 <h3 className="text-base font-bold text-[#27313A]">
-                  Upper Body Strength
+                  {todayWorkout
+                    ? todayWorkout.workout_name || 'Workout Session'
+                    : isWorkoutDone
+                    ? 'Daily Workout Done'
+                    : 'No workout logged yet'}
                 </h3>
                 <p className="text-xs text-[#71808C]">
-                  {workoutChecked
-                    ? '45 mins • 4 exercises logged'
-                    : 'Target: 40-50 mins session'}
+                  {todayWorkout
+                    ? `${todayWorkout.duration_minutes || 45} mins • ${
+                        todayWorkout.workout_exercises?.length || 1
+                      } exercises logged`
+                    : isWorkoutDone
+                    ? 'Session recorded for today ✓'
+                    : 'Target: 30–50 mins session'}
                 </p>
               </div>
               <div
                 className={`w-11 h-11 rounded-2xl flex items-center justify-center ${
-                  workoutChecked
+                  isWorkoutDone
                     ? 'bg-[#DDF7EA] text-[#1E7D58]'
                     : 'bg-[#FFE5E8] text-[#FF6F7D]'
                 }`}
@@ -152,40 +175,62 @@ export default function Dashboard({ onNavigate }) {
 
             <div className="flex items-center justify-between pt-3 border-t border-[#E8D9D6]">
               <span className="text-xs font-semibold text-[#71808C]">
-                {workoutChecked ? 'Done at 08:30 AM' : 'Not started yet'}
+                {isWorkoutDone ? 'Done today ✓' : 'Ready to start'}
               </span>
-              <button
-                type="button"
-                onClick={() => setWorkoutChecked(!workoutChecked)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  workoutChecked
-                    ? 'bg-[#10B981] text-white shadow-xs'
-                    : 'bg-[#FF6F7D] text-white'
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{workoutChecked ? 'Logged ✓' : 'Mark Done'}</span>
-              </button>
+
+              {todayWorkout ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate?.('progress')}
+                  className="text-xs font-bold text-[#10B981] p-0"
+                >
+                  View Details →
+                </Button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => toggleTodayWorkout(!isWorkoutDone)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    isWorkoutDone
+                      ? 'bg-[#10B981] text-white shadow-xs'
+                      : 'bg-[#FF6F7D] text-white'
+                  }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{isWorkoutDone ? 'Logged ✓' : 'Quick Check'}</span>
+                </button>
+              )}
             </div>
           </Card>
 
           {/* Steps Meter Card */}
-          <Card className="p-5 flex flex-col justify-between space-y-4" hover onClick={() => onNavigate?.('steps')}>
+          <Card
+            className="p-5 flex flex-col justify-between space-y-4 cursor-pointer"
+            hover
+            onClick={() => onNavigate?.('steps')}
+          >
             <div className="flex items-center justify-between gap-4">
               <div className="space-y-1">
                 <Badge variant="blue" size="sm">
                   Daily Steps
                 </Badge>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-[#27313A]">8,420</span>
-                  <span className="text-xs text-[#71808C] font-semibold">/ 10,000</span>
+                  <span className="text-2xl font-black text-[#27313A]">
+                    {currentSteps.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-[#71808C] font-semibold">
+                    / {stepGoal.toLocaleString()}
+                  </span>
                 </div>
-                <p className="text-xs text-[#71808C]">6.2 km • ~380 kcal burned</p>
+                <p className="text-xs text-[#71808C]">
+                  {distanceKm} km • ~{burnedKcal} kcal burned
+                </p>
               </div>
 
               <ProgressRing
-                value={8420}
-                max={10000}
+                value={currentSteps}
+                max={stepGoal}
                 size={68}
                 strokeWidth={6}
                 color="#3B82F6"
@@ -196,8 +241,12 @@ export default function Dashboard({ onNavigate }) {
             </div>
 
             <div className="pt-2 border-t border-[#F4E2E0] flex items-center justify-between text-xs font-semibold text-[#71808C]">
-              <span>1,580 steps to goal</span>
-              <span className="text-[#3B82F6] font-bold">84%</span>
+              <span>
+                {remainingSteps === 0
+                  ? 'Goal Achieved!'
+                  : `${remainingSteps.toLocaleString()} steps to goal`}
+              </span>
+              <span className="text-[#3B82F6] font-bold">{stepPercent}%</span>
             </div>
           </Card>
 
@@ -208,18 +257,26 @@ export default function Dashboard({ onNavigate }) {
                 <Badge variant="coral" size="sm">
                   Daily Habits
                 </Badge>
-                <span className="text-xs font-black text-[#27313A]">4 / 5 Done</span>
+                <span className="text-xs font-black text-[#27313A]">
+                  {(todayActivity.water_glasses > 0 ? 1 : 0) + (isWorkoutDone ? 1 : 0)} / 3 Tracked
+                </span>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#FFF5F6] border border-[#FFE5E8]">
                   <span className="font-semibold text-[#27313A]">💧 Hydration</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-[#E04B5A]">{waterGlasses} / 8 cups</span>
+                    <span className="font-bold text-[#E04B5A]">
+                      {todayActivity.water_glasses || 0} / 8 cups
+                    </span>
                     <button
                       type="button"
-                      onClick={() => setWaterGlasses((g) => Math.min(8, g + 1))}
-                      className="w-5 h-5 rounded-md bg-[#FF6F7D] text-white flex items-center justify-center font-bold text-xs hover:bg-[#F25A69]"
+                      onClick={() =>
+                        updateTodayWater(
+                          Math.min(8, (todayActivity.water_glasses || 0) + 1)
+                        )
+                      }
+                      className="w-5 h-5 rounded-md bg-[#FF6F7D] text-white flex items-center justify-center font-bold text-xs hover:bg-[#F25A69] cursor-pointer"
                     >
                       +
                     </button>
@@ -227,8 +284,8 @@ export default function Dashboard({ onNavigate }) {
                 </div>
 
                 <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#F5FAFF] border border-[#E3F0FF]">
-                  <span className="font-semibold text-[#27313A]">✨ Daily Prayer / Reflection</span>
-                  <span className="font-bold text-[#2563EB]">4 / 5 Completed</span>
+                  <span className="font-semibold text-[#27313A]">✨ Reflection & Prayer</span>
+                  <span className="font-bold text-[#2563EB]">Active Daily</span>
                 </div>
               </div>
             </div>
@@ -405,7 +462,7 @@ export default function Dashboard({ onNavigate }) {
             icon={Footprints}
             className="shrink-0 text-xs font-bold"
           >
-            Log Steps
+            Update Steps
           </Button>
           <Button
             variant="outline"

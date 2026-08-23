@@ -155,19 +155,24 @@ CREATE TABLE IF NOT EXISTS public.exercises (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
   category TEXT NOT NULL,
+  muscle_group TEXT,
+  equipment TEXT,
   description TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ----------------------------------------------------------------------------
 -- Table 5: workout_sessions
--- Logged workouts per user per club
+-- Logged workout sessions per user per club.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.workout_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   club_id UUID NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
+  workout_name TEXT NOT NULL DEFAULT 'Workout Session',
   workout_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  started_at TIMESTAMPTZ DEFAULT now(),
+  completed_at TIMESTAMPTZ DEFAULT now(),
   duration_minutes INTEGER CHECK (duration_minutes >= 0),
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -175,13 +180,14 @@ CREATE TABLE IF NOT EXISTS public.workout_sessions (
 
 -- ----------------------------------------------------------------------------
 -- Table 6: workout_exercises
--- Sets, reps, and weights performed per session
+-- Individual exercises attached to a workout session.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.workout_exercises (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workout_session_id UUID NOT NULL REFERENCES public.workout_sessions(id) ON DELETE CASCADE,
   exercise_id UUID NOT NULL REFERENCES public.exercises(id) ON DELETE RESTRICT,
-  sets INTEGER NOT NULL CHECK (sets > 0),
+  order_index INTEGER DEFAULT 0,
+  sets INTEGER CHECK (sets > 0),
   reps INTEGER CHECK (reps >= 0),
   weight NUMERIC(6,2) CHECK (weight >= 0),
   duration_seconds INTEGER CHECK (duration_seconds >= 0),
@@ -189,7 +195,46 @@ CREATE TABLE IF NOT EXISTS public.workout_exercises (
 );
 
 -- ----------------------------------------------------------------------------
--- Table 7: steps
+-- Table 6b: exercise_sets
+-- Granular sets, reps, weights, duration, distance logged per exercise.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.exercise_sets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  workout_exercise_id UUID NOT NULL REFERENCES public.workout_exercises(id) ON DELETE CASCADE,
+  set_number INTEGER NOT NULL CHECK (set_number > 0),
+  reps INTEGER CHECK (reps >= 0),
+  weight NUMERIC(6,2) CHECK (weight >= 0),
+  duration_seconds INTEGER CHECK (duration_seconds >= 0),
+  distance NUMERIC(6,2) CHECK (distance >= 0),
+  completed BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ----------------------------------------------------------------------------
+-- Table 7: daily_activity
+-- Daily steps, hydration, and workout completion per user per date.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.daily_activity (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  club_id UUID NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
+  activity_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  steps INTEGER NOT NULL DEFAULT 0 CHECK (steps >= 0),
+  water_glasses INTEGER NOT NULL DEFAULT 0 CHECK (water_glasses >= 0),
+  workout_completed BOOLEAN NOT NULL DEFAULT false,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_user_daily_activity UNIQUE (user_id, activity_date)
+);
+
+CREATE TRIGGER set_daily_activity_updated_at
+  BEFORE UPDATE ON public.daily_activity
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- Table 7b: steps (legacy compatibility)
 -- Daily steps tracking per user per club
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.steps (
