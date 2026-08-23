@@ -17,7 +17,7 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-  CREATE TYPE member_status AS ENUM ('active', 'muted', 'removed', 'banned');
+  CREATE TYPE member_status AS ENUM ('active', 'pending', 'suspended', 'muted', 'removed', 'banned');
 EXCEPTION
   WHEN duplicate_object THEN null;
 END $$;
@@ -91,15 +91,35 @@ CREATE TRIGGER set_profiles_updated_at
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, avatar_url)
+  INSERT INTO public.profiles (
+    id,
+    full_name,
+    avatar_url,
+    whatsapp_number,
+    gender,
+    age,
+    height
+  )
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', 'Member'),
-    NEW.raw_user_meta_data->>'avatar_url'
-  );
+    NEW.raw_user_meta_data->>'avatar_url',
+    NEW.raw_user_meta_data->>'whatsapp_number',
+    NEW.raw_user_meta_data->>'gender',
+    NULLIF(NEW.raw_user_meta_data->>'age', '')::INTEGER,
+    NULLIF(NEW.raw_user_meta_data->>'height', '')::NUMERIC
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name,
+    avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
+    whatsapp_number = COALESCE(EXCLUDED.whatsapp_number, public.profiles.whatsapp_number),
+    gender = COALESCE(EXCLUDED.gender, public.profiles.gender),
+    age = COALESCE(EXCLUDED.age, public.profiles.age),
+    height = COALESCE(EXCLUDED.height, public.profiles.height);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created

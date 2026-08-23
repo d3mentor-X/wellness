@@ -1,15 +1,20 @@
 import { useState } from 'react'
+import { useAuth } from '../context/useAuth'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
+import { Button } from '../components/common/Button'
 import {
   ChevronLeft,
   Bell,
   Sliders,
   CheckCircle2,
   Shield,
+  LogOut,
+  User,
 } from 'lucide-react'
 
 export default function Settings({ onNavigate }) {
+  const { user, profile, membership, logout } = useAuth()
   const [units, setUnits] = useState('metric') // metric or imperial
   const [notifs, setNotifs] = useState({
     challenges: true,
@@ -21,6 +26,8 @@ export default function Settings({ onNavigate }) {
   const toggleNotif = (key) => {
     setNotifs((prev) => ({ ...prev, [key]: !prev[key] }))
   }
+
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -44,12 +51,56 @@ export default function Settings({ onNavigate }) {
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-[#71808C]">
-            Manage measurement units, notifications, and privacy options.
+            Manage measurement units, notifications, and security options.
           </p>
         </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={LogOut}
+          onClick={logout}
+          className="self-start sm:self-center text-xs font-bold text-[#E11D48] hover:bg-[#FFE5E8]"
+        >
+          Sign Out
+        </Button>
       </div>
 
-      {/* 1. Unit Preferences */}
+      {/* 1. Account Details Card */}
+      <Card className="p-5 sm:p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <User className="w-5 h-5 text-[#FF6F7D]" />
+          <h3 className="text-base font-bold text-[#27313A]">Account Information</h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="p-3.5 rounded-2xl bg-[#FFF9F8] border border-[#F4E2E0] space-y-0.5">
+            <span className="text-[11px] font-bold text-[#71808C] uppercase">Full Name</span>
+            <p className="text-sm font-bold text-[#27313A]">{displayName}</p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-[#FFF9F8] border border-[#F4E2E0] space-y-0.5">
+            <span className="text-[11px] font-bold text-[#71808C] uppercase">Email</span>
+            <p className="text-sm font-bold text-[#27313A] truncate">{user?.email}</p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-[#FFF9F8] border border-[#F4E2E0] space-y-0.5">
+            <span className="text-[11px] font-bold text-[#71808C] uppercase">Club Role</span>
+            <p className="text-sm font-bold text-[#27313A] capitalize">
+              {membership?.role || 'Member'}
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-[#FFF9F8] border border-[#F4E2E0] space-y-0.5">
+            <span className="text-[11px] font-bold text-[#71808C] uppercase">Membership Status</span>
+            <p className="text-sm font-bold text-[#10B981] capitalize">
+              {membership?.status || 'Active'}
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* 2. Unit Preferences */}
       <Card className="p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Sliders className="w-5 h-5 text-[#FF6F7D]" />
@@ -91,7 +142,7 @@ export default function Settings({ onNavigate }) {
         </div>
       </Card>
 
-      {/* 2. Notification Preferences */}
+      {/* 3. Notification Preferences */}
       <Card className="p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Bell className="w-5 h-5 text-[#FF6F7D]" />
@@ -148,14 +199,14 @@ export default function Settings({ onNavigate }) {
         </div>
       </Card>
 
-      {/* 3. Security & Privacy */}
+      {/* 4. Security & Privacy */}
       <Card className="p-5 sm:p-6 space-y-3 bg-[#F0FDF4] border-[#C6F1DC]">
         <div className="flex items-center gap-2 text-sm font-bold text-[#1E7D58]">
           <Shield className="w-5 h-5" />
-          <span>Security & Row Level Privacy Active</span>
+          <span>PostgreSQL Row Level Security Active</span>
         </div>
         <p className="text-xs text-[#1E7D58] leading-relaxed">
-          Your private health metrics, nutrition logs, and prayers are encrypted and strictly guarded by PostgreSQL Row Level Security.
+          Your private health metrics, nutrition logs, and prayers are strictly guarded and inaccessible across clubs or unauthenticated sessions.
         </p>
       </Card>
     </div>

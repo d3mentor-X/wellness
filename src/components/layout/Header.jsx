@@ -1,8 +1,21 @@
 import { Flame, Sparkles } from 'lucide-react'
 import { PRIMARY_NAV_ITEMS } from '../../constants/navigation'
 import { Avatar } from '../common/Avatar'
+import { useAuth } from '../../context/useAuth'
 
 export function Header({ activeTab, onNavigate }) {
+  const { user, profile, membership } = useAuth()
+
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
+  const roleLabel =
+    membership?.role === 'admin'
+      ? 'Club Admin'
+      : membership?.role === 'instructor'
+      ? 'Instructor'
+      : 'Level 8'
+
+  const isInstructor = membership?.role === 'instructor' || membership?.role === 'admin'
+
   return (
     <header className="sticky top-0 z-40 bg-[#FFF9F8]/90 backdrop-blur-md border-b border-[#F4E2E0] transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-4">
@@ -59,30 +72,37 @@ export function Header({ activeTab, onNavigate }) {
           <div
             onClick={() => onNavigate('progress')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#FFE5E8] border border-[#FFCCD2] text-[#E04B5A] text-xs font-black cursor-pointer hover:bg-[#FFD9DE] transition-all hover:scale-105 shadow-xs"
-            title="12 Day Active Streak"
+            title="Active Streak"
           >
             <span className="text-sm">🔥</span>
             <span>12d</span>
           </div>
 
-          {/* Level 8 Indicator & Avatar */}
+          {/* User Info & Avatar */}
           <button
             type="button"
             onClick={() => onNavigate('profile')}
             className="flex items-center gap-2.5 p-1 rounded-2xl hover:bg-white hover:shadow-xs border border-transparent hover:border-[#F2DCD9] transition-all cursor-pointer"
-            title="View Profile & XP"
+            title="View Profile"
           >
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-[#27313A] leading-tight">Alex Rivera</p>
+              <p className="text-xs font-bold text-[#27313A] leading-tight truncate max-w-[120px]">
+                {displayName}
+              </p>
               <p className="text-[10px] font-bold text-[#1E7D58] bg-[#DDF7EA] px-1.5 py-0.2 rounded-md inline-block">
-                Level 8
+                {roleLabel}
               </p>
             </div>
-            <Avatar name="Alex Rivera" size="sm" status="online" />
+            <Avatar
+              name={displayName}
+              src={profile?.avatar_url}
+              size="sm"
+              status="online"
+              isInstructor={isInstructor}
+            />
           </button>
         </div>
       </div>
     </header>
   )
 }
-
