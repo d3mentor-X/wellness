@@ -535,6 +535,34 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 );
 
 -- ----------------------------------------------------------------------------
+-- Table 16b: ai_conversations
+-- Private AI coaching chat threads
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.ai_conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'Fitness Coaching Session',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_conversations_user ON public.ai_conversations(user_id, updated_at DESC);
+
+-- ----------------------------------------------------------------------------
+-- Table 16c: ai_messages
+-- Conversational turns with the AI Coach
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.ai_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES public.ai_conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_messages_conv ON public.ai_messages(conversation_id, created_at ASC);
+
+-- ----------------------------------------------------------------------------
 -- Table 17: daily_prayer_tracking
 -- Daily spiritual habits and prayer tracking (private to user)
 -- ----------------------------------------------------------------------------
