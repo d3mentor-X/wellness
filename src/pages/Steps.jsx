@@ -6,6 +6,7 @@ import { ProgressRing } from '../components/common/ProgressRing'
 import { ProgressBar } from '../components/common/ProgressBar'
 import { SectionHeader } from '../components/common/SectionHeader'
 import { useDailyActivity } from '../hooks/useDailyActivity'
+import { useGamification } from '../hooks/useGamification'
 import {
   Footprints,
   Plus,
@@ -17,6 +18,7 @@ import {
 
 export default function Steps({ onNavigate }) {
   const { todayActivity, activityHistory, loading, updateTodaySteps } = useDailyActivity()
+  const { syncGamification } = useGamification()
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [stepInputVal, setStepInputVal] = useState(String(todayActivity.steps || ''))
@@ -41,6 +43,7 @@ export default function Steps({ onNavigate }) {
     setSaving(true)
     try {
       await updateTodaySteps(stepInputVal)
+      syncGamification()
       setSaveSuccess(true)
       setTimeout(() => {
         setIsUpdateModalOpen(false)

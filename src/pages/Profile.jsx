@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/useAuth'
+import { useGamification } from '../hooks/useGamification'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -21,10 +22,14 @@ import {
   AlertCircle,
   Phone,
   User as UserIcon,
+  Flame,
+  Footprints,
+  Dumbbell,
 } from 'lucide-react'
 
 export default function Profile({ onNavigate }) {
   const { user, profile, membership, updateProfile, logout } = useAuth()
+  const { totalXp, levelInfo, streakInfo, achievements, unlockedCount, stats } = useGamification()
 
   // Edit profile state
   const [isEditing, setIsEditing] = useState(false)
@@ -34,7 +39,7 @@ export default function Profile({ onNavigate }) {
   const [editAge, setEditAge] = useState(profile?.age ? String(profile.age) : '')
   const [editHeight, setEditHeight] = useState(profile?.height ? String(profile.height) : '')
   const [saving, setSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState(null) // { type: 'success'|'error', text: '' }
+  const [saveStatus, setSaveStatus] = useState(null)
 
   const handleOpenEdit = () => {
     setEditName(profile?.full_name || '')
@@ -81,57 +86,7 @@ export default function Profile({ onNavigate }) {
       ? 'Club Admin'
       : userRole === 'instructor'
       ? 'Instructor'
-      : 'Member'
-
-  const achievements = [
-    {
-      icon: '🔥',
-      title: '7 Day Streak',
-      description: 'Logged 7 continuous active days',
-      unlocked: true,
-      tier: 'bronze',
-      awardedAt: 'Aug 10',
-    },
-    {
-      icon: '🔥',
-      title: '30 Day Streak',
-      description: 'Completed 30 consecutive days of activity',
-      unlocked: false,
-      tier: 'gold',
-    },
-    {
-      icon: '👟',
-      title: '100K Steps',
-      description: 'Accumulated over 100,000 steps',
-      unlocked: true,
-      tier: 'silver',
-      awardedAt: 'Aug 15',
-    },
-    {
-      icon: '💪',
-      title: '50 Workouts',
-      description: 'Completed 50 logged fitness sessions',
-      unlocked: true,
-      tier: 'gold',
-      awardedAt: 'Aug 18',
-    },
-    {
-      icon: '🏆',
-      title: 'Challenge Winner',
-      description: 'Finished 1st place in a club challenge',
-      unlocked: true,
-      tier: 'diamond',
-      awardedAt: 'Aug 14',
-    },
-    {
-      icon: '⭐',
-      title: "Instructor's Pick",
-      description: 'Awarded for extraordinary club dedication',
-      unlocked: true,
-      tier: 'instructor',
-      awardedAt: 'Aug 20',
-    },
-  ]
+      : `Level ${levelInfo.level}`
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -171,9 +126,11 @@ export default function Profile({ onNavigate }) {
                 </p>
               )}
               <div className="flex items-center gap-3 pt-1 text-xs font-bold text-[#FF6F7D]">
-                <span>🔥 12 Day Streak</span>
+                <span>
+                  🔥 {streakInfo.current_streak > 0 ? `${streakInfo.current_streak} Day Streak` : '0 Day Streak'}
+                </span>
                 <span>•</span>
-                <span>🏆 4 Badges Earned</span>
+                <span>🏆 {unlockedCount} Badges Earned</span>
               </div>
             </div>
           </div>
@@ -341,70 +298,88 @@ export default function Profile({ onNavigate }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-[#FFE5E8] text-[#FF6F7D] font-black text-sm flex items-center justify-center">
-              L8
+              L{levelInfo.level}
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-bold text-[#27313A]">
-                Level 8 • Fitness Explorer
+                Level {levelInfo.level} • {levelInfo.title}
               </h3>
-              <p className="text-xs text-[#71808C]">Earn XP by logging workouts, steps, and challenges.</p>
+              <p className="text-xs text-[#71808C]">
+                {totalXp} Total XP earned • {levelInfo.xpNeeded - levelInfo.xpInLevel} XP to Level {levelInfo.level + 1}
+              </p>
             </div>
           </div>
           <span className="text-xs sm:text-sm font-black text-[#FF6F7D]">
-            680 / 800 XP (85%)
+            {levelInfo.xpInLevel} / {levelInfo.xpNeeded} XP ({levelInfo.progressPercent}%)
           </span>
         </div>
-        <ProgressBar value={680} max={800} variant="coral" size="lg" />
+        <ProgressBar
+          value={levelInfo.xpInLevel}
+          max={levelInfo.xpNeeded}
+          variant="coral"
+          size="lg"
+        />
       </Card>
 
       {/* 3. Badges & Trophy Showcase */}
       <div className="space-y-4">
         <SectionHeader
           title="Badges & Milestones"
-          subtitle="Earned trophies from your club challenges and consistency."
+          subtitle={`Earned trophies from your training consistency and step achievements (${unlockedCount} unlocked).`}
           icon={Award}
         />
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {achievements.map((badge, idx) => (
-            <AchievementBadge key={idx} {...badge} />
+            <AchievementBadge key={badge.id || idx} {...badge} />
           ))}
         </div>
       </div>
 
-      {/* 4. Personal Stats & Privacy Note */}
+      {/* 4. Personal Stats & All-Time Numbers */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <Card className="md:col-span-2 p-5 sm:p-6 space-y-4">
+        <Card className="md:col-span-2 p-5 sm:p-6 space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-[#27313A]">
-              Personal Stats Overview
+              Training Activity Summary
             </h3>
             <span className="text-xs font-semibold text-[#71808C]">All Time</span>
           </div>
 
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="p-3.5 rounded-2xl bg-[#FFF9F8] border border-[#F4E2E0]">
+              <div className="w-7 h-7 rounded-xl bg-[#FFE5E8] text-[#FF6F7D] flex items-center justify-center mx-auto mb-1">
+                <Dumbbell className="w-3.5 h-3.5" />
+              </div>
               <span className="text-xl sm:text-2xl font-black text-[#27313A]">
-                {profile?.age ? `${profile.age}` : '—'}
+                {stats.totalWorkouts}
               </span>
               <span className="text-[11px] font-bold text-[#71808C] block uppercase mt-0.5">
-                Age
+                Workouts
               </span>
             </div>
+
             <div className="p-3.5 rounded-2xl bg-[#FFF9F8] border border-[#F4E2E0]">
+              <div className="w-7 h-7 rounded-xl bg-[#E3F0FF] text-[#2563EB] flex items-center justify-center mx-auto mb-1">
+                <Footprints className="w-3.5 h-3.5" />
+              </div>
               <span className="text-xl sm:text-2xl font-black text-[#27313A]">
-                {profile?.height ? `${profile.height} cm` : '—'}
+                {stats.totalSteps.toLocaleString()}
               </span>
               <span className="text-[11px] font-bold text-[#71808C] block uppercase mt-0.5">
-                Height
+                Total Steps
               </span>
             </div>
+
             <div className="p-3.5 rounded-2xl bg-[#FFF9F8] border border-[#F4E2E0]">
-              <span className="text-xl sm:text-2xl font-black text-[#27313A] capitalize">
-                {profile?.gender?.replace(/_/g, ' ') || '—'}
+              <div className="w-7 h-7 rounded-xl bg-[#DDF7EA] text-[#1E7D58] flex items-center justify-center mx-auto mb-1">
+                <Flame className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xl sm:text-2xl font-black text-[#27313A]">
+                {streakInfo.longest_streak}d
               </span>
               <span className="text-[11px] font-bold text-[#71808C] block uppercase mt-0.5">
-                Gender
+                Best Streak
               </span>
             </div>
           </div>
@@ -412,7 +387,7 @@ export default function Profile({ onNavigate }) {
           <div className="p-3.5 rounded-2xl bg-[#F0FDF4] border border-[#C6F1DC] flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-[#10B981] shrink-0" />
             <p className="text-xs text-[#1E7D58] leading-relaxed">
-              <strong>Strict Privacy:</strong> Your private metrics (age and height) are protected by PostgreSQL Row Level Security and are never exposed to other club members.
+              <strong>Strict Privacy:</strong> Your private metrics (age: {profile?.age || '—'}, height: {profile?.height ? `${profile.height} cm` : '—'}) are protected by PostgreSQL Row Level Security and are never exposed to other members.
             </p>
           </div>
         </Card>

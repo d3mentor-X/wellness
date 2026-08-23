@@ -2,9 +2,11 @@ import { Flame, Sparkles } from 'lucide-react'
 import { PRIMARY_NAV_ITEMS } from '../../constants/navigation'
 import { Avatar } from '../common/Avatar'
 import { useAuth } from '../../context/useAuth'
+import { useGamification } from '../../hooks/useGamification'
 
 export function Header({ activeTab, onNavigate }) {
   const { user, profile, membership } = useAuth()
+  const { streakInfo, levelInfo } = useGamification()
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
   const roleLabel =
@@ -12,7 +14,7 @@ export function Header({ activeTab, onNavigate }) {
       ? 'Club Admin'
       : membership?.role === 'instructor'
       ? 'Instructor'
-      : 'Level 8'
+      : `Level ${levelInfo.level}`
 
   const isInstructor = membership?.role === 'instructor' || membership?.role === 'admin'
 
@@ -69,14 +71,19 @@ export function Header({ activeTab, onNavigate }) {
         {/* Top Right: Streak Pill & Profile Avatar */}
         <div className="flex items-center gap-3">
           {/* Active Streak */}
-          <div
+          <button
+            type="button"
             onClick={() => onNavigate('progress')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#FFE5E8] border border-[#FFCCD2] text-[#E04B5A] text-xs font-black cursor-pointer hover:bg-[#FFD9DE] transition-all hover:scale-105 shadow-xs"
-            title="Active Streak"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-black cursor-pointer transition-all hover:scale-105 shadow-xs ${
+              streakInfo.current_streak > 0
+                ? 'bg-[#FFE5E8] border-[#FFCCD2] text-[#E04B5A] hover:bg-[#FFD9DE]'
+                : 'bg-white border-[#F4E2E0] text-[#71808C] hover:text-[#27313A]'
+            }`}
+            title={streakInfo.current_streak > 0 ? `${streakInfo.current_streak} Day Active Streak` : 'Start your streak!'}
           >
             <span className="text-sm">🔥</span>
-            <span>12d</span>
-          </div>
+            <span>{streakInfo.current_streak}d</span>
+          </button>
 
           {/* User Info & Avatar */}
           <button

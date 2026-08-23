@@ -307,8 +307,28 @@ CREATE TABLE IF NOT EXISTS public.achievements (
   category TEXT NOT NULL,
   requirement_type TEXT NOT NULL,
   requirement_value NUMERIC(10,2) NOT NULL,
+  tier TEXT DEFAULT 'bronze',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ----------------------------------------------------------------------------
+-- Table 10b: xp_transactions
+-- Gamification XP audit trail with unique event idempotency
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.xp_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  club_id UUID NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
+  amount INTEGER NOT NULL CHECK (amount > 0),
+  reason TEXT NOT NULL,
+  reference_type TEXT NOT NULL,
+  reference_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_user_xp_ref UNIQUE (user_id, reference_type, reference_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_xp_transactions_user ON public.xp_transactions(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_xp_transactions_club_user ON public.xp_transactions(club_id, user_id);
 
 -- ----------------------------------------------------------------------------
 -- Table 11: user_achievements

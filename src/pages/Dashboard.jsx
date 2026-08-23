@@ -1,6 +1,7 @@
 import { useAuth } from '../context/useAuth'
 import { useDailyActivity } from '../hooks/useDailyActivity'
 import { useWorkouts } from '../hooks/useWorkouts'
+import { useGamification } from '../hooks/useGamification'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -24,6 +25,7 @@ export default function Dashboard({ onNavigate }) {
   const { user, profile, membership } = useAuth()
   const { todayActivity, updateTodayWater, toggleTodayWorkout } = useDailyActivity()
   const { workouts } = useWorkouts()
+  const { totalXp, levelInfo, streakInfo } = useGamification()
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
   const firstName = displayName.split(' ')[0]
@@ -33,7 +35,7 @@ export default function Dashboard({ onNavigate }) {
       ? 'Club Admin'
       : userRole === 'instructor'
       ? 'Instructor'
-      : 'Member'
+      : `Level ${levelInfo.level}`
 
   const todayDate = new Date().toISOString().split('T')[0]
   const todayWorkout = workouts.find(
@@ -72,47 +74,77 @@ export default function Dashboard({ onNavigate }) {
             <p className="text-xs sm:text-sm text-[#71808C]">
               {isWorkoutDone
                 ? 'Great job! You logged a workout session today.'
-                : 'Ready when you are. Start your fitness session today!'}
+                : streakInfo.current_streak > 0
+                ? 'Keep your streak alive — log today\'s fitness activity!'
+                : 'Your fitness journey starts today. Log your first activity!'}
             </p>
           </div>
         </div>
 
-        {/* Streak & XP Concept */}
+        {/* Real Streak Display */}
         <div className="flex items-center gap-3 self-start sm:self-center">
-          <div className="bg-[#FFE5E8] border border-[#FFCCD2] px-4 py-2.5 rounded-2xl flex items-center gap-2.5 shadow-xs">
+          <div
+            onClick={() => onNavigate?.('progress')}
+            className={`px-4 py-2.5 rounded-2xl flex items-center gap-2.5 shadow-xs cursor-pointer border transition-transform hover:scale-102 ${
+              streakInfo.current_streak > 0
+                ? 'bg-[#FFE5E8] border-[#FFCCD2]'
+                : 'bg-white border-[#F4E2E0]'
+            }`}
+          >
             <span className="text-xl">🔥</span>
             <div>
-              <p className="text-xs font-black text-[#E04B5A] leading-tight">
-                12 Day Streak
+              <p
+                className={`text-xs font-black leading-tight ${
+                  streakInfo.current_streak > 0
+                    ? 'text-[#E04B5A]'
+                    : 'text-[#27313A]'
+                }`}
+              >
+                {streakInfo.current_streak > 0
+                  ? `${streakInfo.current_streak} Day Streak`
+                  : '0 Day Streak'}
               </p>
-              <p className="text-[10px] font-bold text-[#FF6F7D]">Personal Best!</p>
+              <p className="text-[10px] font-bold text-[#FF6F7D]">
+                {streakInfo.current_streak > 0
+                  ? `Best: ${streakInfo.longest_streak}d`
+                  : 'Start your first day'}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. XP & Progression Bar */}
+      {/* 2. Real Level & XP Progression Bar */}
       <Card className="p-4 sm:p-5 bg-gradient-to-br from-white to-[#FFF8F8] border-[#F2DCD9]">
         <div className="flex items-center justify-between gap-4 mb-2">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#FFE5E8] text-[#FF6F7D] flex items-center justify-center font-black text-xs">
-              L8
+              L{levelInfo.level}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs sm:text-sm font-bold text-[#27313A]">
-                  Level 8 • Fitness Explorer
+                  Level {levelInfo.level} • {levelInfo.title}
                 </span>
                 <Badge variant="mint" size="sm">
-                  +40 XP Today
+                  {totalXp} Total XP
                 </Badge>
               </div>
-              <p className="text-[11px] text-[#71808C]">120 XP to Level 9 (Club Titan)</p>
+              <p className="text-[11px] text-[#71808C]">
+                {levelInfo.xpNeeded - levelInfo.xpInLevel} XP to Level {levelInfo.level + 1}
+              </p>
             </div>
           </div>
-          <span className="text-xs font-black text-[#FF6F7D]">680 / 800 XP</span>
+          <span className="text-xs font-black text-[#FF6F7D]">
+            {levelInfo.xpInLevel} / {levelInfo.xpNeeded} XP ({levelInfo.progressPercent}%)
+          </span>
         </div>
-        <ProgressBar value={680} max={800} variant="coral" size="md" />
+        <ProgressBar
+          value={levelInfo.xpInLevel}
+          max={levelInfo.xpNeeded}
+          variant="coral"
+          size="md"
+        />
       </Card>
 
       {/* 3. Today's Core Progress Grid */}

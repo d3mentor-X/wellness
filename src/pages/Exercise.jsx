@@ -7,6 +7,7 @@ import { SectionHeader } from '../components/common/SectionHeader'
 import { WorkoutLoggerModal } from '../components/workout/WorkoutLoggerModal'
 import { WorkoutDetailModal } from '../components/workout/WorkoutDetailModal'
 import { useWorkouts } from '../hooks/useWorkouts'
+import { useGamification } from '../hooks/useGamification'
 import {
   Dumbbell,
   Plus,
@@ -24,6 +25,7 @@ import {
 
 export default function Exercise({ onNavigate }) {
   const { workouts, loading, error, logWorkout, deleteWorkout } = useWorkouts()
+  const { streakInfo, syncGamification } = useGamification()
   const [isLoggerOpen, setIsLoggerOpen] = useState(false)
   const [selectedWorkoutDetail, setSelectedWorkoutDetail] = useState(null)
 
@@ -103,9 +105,9 @@ export default function Exercise({ onNavigate }) {
           accentColor="coral"
         />
         <StatCard
-          title="This Week"
-          value={loading ? '...' : `${activeThisWeek} days`}
-          subtitle="Mon–Sun momentum"
+          title="Active Streak"
+          value={streakInfo.current_streak > 0 ? `${streakInfo.current_streak} days` : '0 days'}
+          subtitle={streakInfo.current_streak > 0 ? `Best: ${streakInfo.longest_streak}d` : 'Start your streak'}
           icon={Flame}
           accentColor="coral"
         />
@@ -366,7 +368,10 @@ export default function Exercise({ onNavigate }) {
       <WorkoutLoggerModal
         isOpen={isLoggerOpen}
         onClose={() => setIsLoggerOpen(false)}
-        onSave={logWorkout}
+        onSave={async (data) => {
+          await logWorkout(data)
+          syncGamification()
+        }}
       />
 
       {/* Workout Detail Modal */}
@@ -374,7 +379,10 @@ export default function Exercise({ onNavigate }) {
         workout={selectedWorkoutDetail}
         isOpen={!!selectedWorkoutDetail}
         onClose={() => setSelectedWorkoutDetail(null)}
-        onDelete={deleteWorkout}
+        onDelete={async (id) => {
+          await deleteWorkout(id)
+          syncGamification()
+        }}
       />
     </div>
   )
