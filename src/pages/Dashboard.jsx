@@ -4,6 +4,7 @@ import { useWorkouts } from '../hooks/useWorkouts'
 import { useGamification } from '../hooks/useGamification'
 import { useChallenges } from '../hooks/useChallenges'
 import { useSocial } from '../hooks/useSocial'
+import { useNutrition } from '../hooks/useNutrition'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -21,6 +22,7 @@ import {
   TrendingUp,
   Zap,
   ChevronRight,
+  Utensils,
 } from 'lucide-react'
 
 export default function Dashboard({ onNavigate }) {
@@ -30,6 +32,7 @@ export default function Dashboard({ onNavigate }) {
   const { totalXp, levelInfo, streakInfo } = useGamification()
   const { userActiveChallenge } = useChallenges()
   const { momentum, announcements } = useSocial()
+  const { summary: nutritionSummary } = useNutrition()
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
   const firstName = displayName.split(' ')[0]
@@ -319,6 +322,21 @@ export default function Dashboard({ onNavigate }) {
                   </div>
                 </div>
 
+                <div
+                  onClick={() => onNavigate?.('food-calories')}
+                  className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#F0FDF4] border border-[#DCFCE7] cursor-pointer hover:bg-[#DCFCE7]/60 transition-all"
+                >
+                  <span className="font-semibold text-[#27313A] flex items-center gap-1">
+                    <Utensils className="w-3.5 h-3.5 text-[#16A34A]" />
+                    <span>Nutrition</span>
+                  </span>
+                  <span className="font-bold text-[#16A34A]">
+                    {nutritionSummary.totals.calories > 0
+                      ? `${Math.round(nutritionSummary.totals.calories)} / ${nutritionSummary.targets.calories} kcal`
+                      : 'Log Meal →'}
+                  </span>
+                </div>
+
                 <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#F5FAFF] border border-[#E3F0FF]">
                   <span className="font-semibold text-[#27313A]">✨ Reflection & Prayer</span>
                   <span className="font-bold text-[#2563EB]">Active Daily</span>
@@ -329,10 +347,10 @@ export default function Dashboard({ onNavigate }) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onNavigate?.('spirituality')}
+              onClick={() => onNavigate?.('food-calories')}
               className="w-full text-xs font-bold text-[#FF6F7D] justify-center"
             >
-              <span>View Spiritual Tracker</span>
+              <span>Track Food & Nutrition</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           </Card>

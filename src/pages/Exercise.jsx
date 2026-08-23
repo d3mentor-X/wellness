@@ -9,6 +9,7 @@ import { WorkoutDetailModal } from '../components/workout/WorkoutDetailModal'
 import { useWorkouts } from '../hooks/useWorkouts'
 import { useGamification } from '../hooks/useGamification'
 import { useChallenges } from '../hooks/useChallenges'
+import { useNutrition } from '../hooks/useNutrition'
 import {
   Dumbbell,
   Plus,
@@ -28,6 +29,7 @@ export default function Exercise({ onNavigate }) {
   const { workouts, loading, error, logWorkout, deleteWorkout } = useWorkouts()
   const { streakInfo, syncGamification } = useGamification()
   const { activeChallenges } = useChallenges()
+  const { summary: nutritionSummary } = useNutrition()
   const [isLoggerOpen, setIsLoggerOpen] = useState(false)
   const [selectedWorkoutDetail, setSelectedWorkoutDetail] = useState(null)
 
@@ -203,7 +205,11 @@ export default function Exercise({ onNavigate }) {
             </div>
             <div>
               <h4 className="text-sm font-bold text-[#27313A]">Food & Nutrition</h4>
-              <p className="text-[11px] text-[#71808C]">Macronutrient targets</p>
+              <p className="text-[11px] text-[#71808C]">
+                {nutritionSummary.totals.calories > 0
+                  ? `${Math.round(nutritionSummary.totals.calories)} / ${nutritionSummary.targets.calories} kcal`
+                  : 'Track daily calories & macros'}
+              </p>
             </div>
           </div>
           <ArrowUpRight className="w-4 h-4 text-[#71808C] group-hover:text-[#FF6F7D] transition-colors" />

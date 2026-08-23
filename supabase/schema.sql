@@ -255,19 +255,74 @@ CREATE TRIGGER set_steps_updated_at
   EXECUTE FUNCTION public.handle_updated_at();
 
 -- ----------------------------------------------------------------------------
+-- Table 7c: nutrition_targets
+-- Personal macro & calorie targets (strictly private to user)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.nutrition_targets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  club_id UUID REFERENCES public.clubs(id) ON DELETE CASCADE,
+  calories NUMERIC(6,1) NOT NULL DEFAULT 2200 CHECK (calories >= 500 AND calories <= 10000),
+  protein NUMERIC(5,1) NOT NULL DEFAULT 150 CHECK (protein >= 0 AND protein <= 1000),
+  carbs NUMERIC(5,1) NOT NULL DEFAULT 250 CHECK (carbs >= 0 AND carbs <= 2000),
+  fat NUMERIC(5,1) NOT NULL DEFAULT 70 CHECK (fat >= 0 AND fat <= 1000),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_user_nutrition_targets UNIQUE (user_id)
+);
+
+-- ----------------------------------------------------------------------------
+-- Table 7d: foods
+-- Common food database and nutritional reference
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.foods (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL UNIQUE,
+  category TEXT NOT NULL DEFAULT 'general',
+  serving_size NUMERIC(6,2) NOT NULL DEFAULT 100,
+  serving_unit TEXT NOT NULL DEFAULT 'g',
+  calories NUMERIC(6,1) NOT NULL DEFAULT 0 CHECK (calories >= 0),
+  protein NUMERIC(5,1) NOT NULL DEFAULT 0 CHECK (protein >= 0),
+  carbs NUMERIC(5,1) NOT NULL DEFAULT 0 CHECK (carbs >= 0),
+  fat NUMERIC(5,1) NOT NULL DEFAULT 0 CHECK (fat >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ----------------------------------------------------------------------------
 -- Table 8: nutrition_logs
--- Daily nutrition, calories, and macros (strictly private to user)
+-- Meal sessions logged per user (strictly private to user)
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.nutrition_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   club_id UUID NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
   log_date DATE NOT NULL DEFAULT CURRENT_DATE,
-  calories NUMERIC(6,1) CHECK (calories >= 0),
-  protein NUMERIC(5,1) CHECK (protein >= 0),
-  carbs NUMERIC(5,1) CHECK (carbs >= 0),
-  fat NUMERIC(5,1) CHECK (fat >= 0),
+  meal_type TEXT NOT NULL DEFAULT 'breakfast' CHECK (meal_type IN ('breakfast', 'lunch', 'dinner', 'snack', 'other')),
+  calories NUMERIC(6,1) DEFAULT 0 CHECK (calories >= 0),
+  protein NUMERIC(5,1) DEFAULT 0 CHECK (protein >= 0),
+  carbs NUMERIC(5,1) DEFAULT 0 CHECK (carbs >= 0),
+  fat NUMERIC(5,1) DEFAULT 0 CHECK (fat >= 0),
   notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ----------------------------------------------------------------------------
+-- Table 8b: nutrition_log_items
+-- Individual food items inside a meal log
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.nutrition_log_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nutrition_log_id UUID NOT NULL REFERENCES public.nutrition_logs(id) ON DELETE CASCADE,
+  food_name TEXT NOT NULL,
+  quantity NUMERIC(6,2) NOT NULL CHECK (quantity > 0),
+  unit TEXT NOT NULL DEFAULT 'g',
+  calories NUMERIC(6,1) NOT NULL CHECK (calories >= 0),
+  protein NUMERIC(5,1) NOT NULL DEFAULT 0 CHECK (protein >= 0),
+  carbs NUMERIC(5,1) NOT NULL DEFAULT 0 CHECK (carbs >= 0),
+  fat NUMERIC(5,1) NOT NULL DEFAULT 0 CHECK (fat >= 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
