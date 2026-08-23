@@ -2,6 +2,7 @@ import { useAuth } from '../context/useAuth'
 import { useDailyActivity } from '../hooks/useDailyActivity'
 import { useWorkouts } from '../hooks/useWorkouts'
 import { useGamification } from '../hooks/useGamification'
+import { useChallenges } from '../hooks/useChallenges'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -26,6 +27,7 @@ export default function Dashboard({ onNavigate }) {
   const { todayActivity, updateTodayWater, toggleTodayWorkout } = useDailyActivity()
   const { workouts } = useWorkouts()
   const { totalXp, levelInfo, streakInfo } = useGamification()
+  const { userActiveChallenge } = useChallenges()
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
   const firstName = displayName.split(' ')[0]
@@ -354,18 +356,40 @@ export default function Dashboard({ onNavigate }) {
           }
         />
 
-        <ChallengeCard
-          featured
-          title="30-Day Consistency Challenge"
-          description="Log at least 30 minutes of fitness or 8,000 steps every day this month."
-          current={22}
-          target={30}
-          unit="days"
-          rank={4}
-          participantsCount={18}
-          daysLeft={8}
-          onView={() => onNavigate?.('challenges')}
-        />
+        {userActiveChallenge ? (
+          <ChallengeCard
+            featured
+            title={userActiveChallenge.title}
+            description={userActiveChallenge.description}
+            current={userActiveChallenge.userProgress}
+            target={Number(userActiveChallenge.target_value)}
+            unit={userActiveChallenge.unit}
+            rank={userActiveChallenge.userRank}
+            participantsCount={userActiveChallenge.participantsCount}
+            daysLeft={userActiveChallenge.daysLeft}
+            onView={() => onNavigate?.('challenges')}
+          />
+        ) : (
+          <Card className="p-6 text-center space-y-3 bg-white border-[#F4E2E0]">
+            <div className="w-10 h-10 rounded-2xl bg-[#FFE5E8] text-[#FF6F7D] flex items-center justify-center mx-auto">
+              <Target className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-[#27313A]">Ready for a new challenge?</h4>
+              <p className="text-xs text-[#71808C]">
+                Explore club challenges to compete with fellow members and earn bonus XP.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate?.('challenges')}
+              className="text-xs font-bold text-[#FF6F7D]"
+            >
+              Explore Challenges
+            </Button>
+          </Card>
+        )}
       </div>
 
       {/* 5. Instructor Message & Club Momentum */}

@@ -3,83 +3,36 @@ import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
 import { ChallengeCard } from '../components/common/ChallengeCard'
-import { SectionHeader } from '../components/common/SectionHeader'
-import { Trophy, Flame, Users, Calendar } from 'lucide-react'
+import { ChallengeDetailModal } from '../components/challenges/ChallengeDetailModal'
+import { CreateChallengeModal } from '../components/challenges/CreateChallengeModal'
+import { useChallenges } from '../hooks/useChallenges'
+import {
+  Trophy,
+  Flame,
+  Users,
+  Calendar,
+  Plus,
+  Target,
+  CheckCircle2,
+} from 'lucide-react'
 
 export default function Goals() {
-  const [activeTab, setActiveTab] = useState('active')
+  const {
+    activeChallenges,
+    upcomingChallenges,
+    completedChallenges,
+    loading,
+    error,
+    isManager,
+    joinChallenge,
+    leaveChallenge,
+    createChallenge,
+    fetchChallengeLeaderboard,
+  } = useChallenges()
 
-  const activeChallenges = [
-    {
-      id: '1',
-      title: '30-Day Consistency Master',
-      description: 'Log at least 30 mins of workout or 8,000 steps daily.',
-      current: 22,
-      target: 30,
-      unit: 'days',
-      rank: 4,
-      participantsCount: 18,
-      daysLeft: 8,
-    },
-    {
-      id: '2',
-      title: 'Weekend 50K Steps Surge',
-      description: 'Hit 50,000 steps between Friday and Sunday.',
-      current: 34200,
-      target: 50000,
-      unit: 'steps',
-      rank: 2,
-      participantsCount: 14,
-      daysLeft: 2,
-    },
-    {
-      id: '3',
-      title: '20 Gym Sessions Month',
-      description: 'Log 20 completed strength & cardio sessions.',
-      current: 14,
-      target: 20,
-      unit: 'sessions',
-      rank: 6,
-      participantsCount: 16,
-      daysLeft: 10,
-    },
-  ]
-
-  const upcomingChallenges = [
-    {
-      id: '4',
-      title: 'Ramadan / Fasting Fitness Sprint',
-      description: 'Maintain mobility and daily prayer streaks for 30 consecutive days.',
-      startDate: 'Starts in 5 days',
-      participantsCount: 12,
-      unit: '30 Days',
-    },
-    {
-      id: '5',
-      title: 'Century Ride & Cardio Marathon',
-      description: 'Accumulate 100km total cycling or running distance.',
-      startDate: 'Starts next Monday',
-      participantsCount: 9,
-      unit: '100 km',
-    },
-  ]
-
-  const completedTrophies = [
-    {
-      id: '6',
-      title: '100K Step Week Champion',
-      date: 'Completed Aug 14',
-      rank: '🥇 1st Place',
-      badge: '🏆 Champion Trophy',
-    },
-    {
-      id: '7',
-      title: '14-Day Morning Workout Habit',
-      date: 'Completed Aug 02',
-      rank: 'Top Finisher',
-      badge: '⭐ Consistency Badge',
-    },
-  ]
+  const [activeTab, setActiveTab] = useState('active') // 'active' | 'upcoming' | 'completed'
+  const [selectedChallenge, setSelectedChallenge] = useState(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -88,137 +41,285 @@ export default function Goals() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-black text-[#27313A] tracking-tight">
-              Club Challenges & Goals
+              Club Challenges
             </h1>
             <Badge variant="coral" size="sm">
-              3 Active
+              {activeChallenges.length} Active
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-[#71808C] mt-1">
-            Compete, stay consistent, and celebrate milestones with your fitness club.
+            Compete together, build healthy habits, and earn trophies with fellow club members.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-center">
+        {/* Manager Actions (Admin/Instructor only) */}
+        {isManager && (
           <Button
-            variant={activeTab === 'active' ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => setActiveTab('active')}
+            variant="primary"
+            size="md"
+            icon={Plus}
+            onClick={() => setIsCreateModalOpen(true)}
+            className="self-start sm:self-center font-bold text-xs"
           >
-            Active ({activeChallenges.length})
+            Create Challenge
           </Button>
-          <Button
-            variant={activeTab === 'upcoming' ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => setActiveTab('upcoming')}
-          >
-            Upcoming ({upcomingChallenges.length})
-          </Button>
-          <Button
-            variant={activeTab === 'completed' ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => setActiveTab('completed')}
-          >
-            Trophies ({completedTrophies.length})
-          </Button>
-        </div>
+        )}
       </div>
 
-      {/* 2. Featured Challenge Banner */}
-      {activeTab === 'active' && (
-        <ChallengeCard
-          featured
-          title="30-Day Consistency Master"
-          description="Log at least 30 minutes of workout or 8,000 steps every day this month."
-          current={22}
-          target={30}
-          unit="days"
-          rank={4}
-          participantsCount={18}
-          daysLeft={8}
-          onView={() => {}}
-        />
-      )}
+      {/* 2. Filter Tabs */}
+      <div className="flex items-center gap-2 bg-[#FFF5F6] p-1.5 rounded-2xl border border-[#FFE5E8] self-start w-fit">
+        <button
+          type="button"
+          onClick={() => setActiveTab('active')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            activeTab === 'active'
+              ? 'bg-white text-[#FF6F7D] shadow-xs'
+              : 'text-[#71808C] hover:text-[#27313A]'
+          }`}
+        >
+          <Flame className="w-4 h-4" />
+          <span>Active ({activeChallenges.length})</span>
+        </button>
 
-      {/* 3. Challenge List based on Tab */}
-      {activeTab === 'active' && (
-        <div className="space-y-4">
-          <SectionHeader
-            title="All Active Challenges"
-            subtitle="Current club challenges you have joined."
-            icon={Flame}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-            {activeChallenges.map((challenge) => (
-              <ChallengeCard key={challenge.id} {...challenge} />
-            ))}
-          </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('upcoming')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            activeTab === 'upcoming'
+              ? 'bg-white text-[#FF6F7D] shadow-xs'
+              : 'text-[#71808C] hover:text-[#27313A]'
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          <span>Upcoming ({upcomingChallenges.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('completed')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            activeTab === 'completed'
+              ? 'bg-white text-[#FF6F7D] shadow-xs'
+              : 'text-[#71808C] hover:text-[#27313A]'
+          }`}
+        >
+          <Trophy className="w-4 h-4" />
+          <span>Completed ({completedChallenges.length})</span>
+        </button>
+      </div>
+
+      {/* 3. Loading Skeletons */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="p-6 space-y-4 animate-pulse">
+              <div className="h-5 bg-[#F0E5E3] rounded-md w-2/3" />
+              <div className="h-4 bg-[#F0E5E3] rounded-md w-full" />
+              <div className="h-10 bg-[#F0E5E3] rounded-xl" />
+            </Card>
+          ))}
         </div>
       )}
 
-      {activeTab === 'upcoming' && (
-        <div className="space-y-4">
-          <SectionHeader
-            title="Upcoming Club Challenges"
-            subtitle="Register early to start when the challenge goes live."
-            icon={Calendar}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {upcomingChallenges.map((item) => (
-              <Card key={item.id} className="p-5 sm:p-6 space-y-4">
-                <div className="space-y-1">
-                  <Badge variant="blue" size="sm">
-                    {item.startDate}
-                  </Badge>
-                  <h3 className="text-base sm:text-lg font-bold text-[#27313A]">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-[#71808C]">{item.description}</p>
-                </div>
+      {/* 4. Error state */}
+      {!loading && error && (
+        <Card className="p-6 text-center space-y-2 bg-[#FFF1F2] border-[#FECDD3]">
+          <p className="text-xs sm:text-sm font-bold text-[#E11D48]">{error}</p>
+        </Card>
+      )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-[#F4E2E0]">
-                  <span className="text-xs font-semibold text-[#71808C] flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-[#FF6F7D]" />
-                    {item.participantsCount} members registered
-                  </span>
-                  <Button variant="secondary" size="sm" className="font-bold text-xs">
-                    Join Challenge
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+      {/* 5. Active Challenges Tab */}
+      {!loading && !error && activeTab === 'active' && (
+        <div className="space-y-4">
+          {activeChallenges.length === 0 ? (
+            <Card className="p-8 text-center space-y-3 bg-white border-[#F4E2E0]">
+              <div className="w-12 h-12 rounded-2xl bg-[#FFE5E8] text-[#FF6F7D] flex items-center justify-center mx-auto">
+                <Target className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm sm:text-base font-bold text-[#27313A]">
+                  No Active Challenges
+                </h4>
+                <p className="text-xs text-[#71808C]">
+                  {isManager
+                    ? 'Launch the first challenge for your club members!'
+                    : 'Your club instructor or admin will launch the next challenge soon.'}
+                </p>
+              </div>
+              {isManager && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={Plus}
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="text-xs font-bold"
+                >
+                  Create Challenge
+                </Button>
+              )}
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeChallenges.map((ch, idx) => (
+                <ChallengeCard
+                  key={ch.id}
+                  featured={idx === 0}
+                  title={ch.title}
+                  description={ch.description}
+                  current={ch.userProgress}
+                  target={Number(ch.target_value)}
+                  unit={ch.unit}
+                  rank={ch.userRank}
+                  participantsCount={ch.participantsCount}
+                  daysLeft={ch.daysLeft}
+                  onView={() => setSelectedChallenge(ch)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {activeTab === 'completed' && (
+      {/* 6. Upcoming Challenges Tab */}
+      {!loading && !error && activeTab === 'upcoming' && (
         <div className="space-y-4">
-          <SectionHeader
-            title="Completed Challenge Trophies"
-            subtitle="Your past victories and earned podium honors."
-            icon={Trophy}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {completedTrophies.map((item) => (
-              <Card key={item.id} variant="mintTint" className="p-5 sm:p-6 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <Badge variant="mint" size="sm">
-                      {item.rank}
-                    </Badge>
-                    <h3 className="text-base font-bold text-[#27313A]">{item.title}</h3>
-                    <p className="text-xs text-[#71808C]">{item.date}</p>
+          {upcomingChallenges.length === 0 ? (
+            <Card className="p-8 text-center space-y-3 bg-white border-[#F4E2E0]">
+              <div className="w-12 h-12 rounded-2xl bg-[#FFE5E8] text-[#FF6F7D] flex items-center justify-center mx-auto">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <h4 className="text-sm sm:text-base font-bold text-[#27313A]">
+                No Upcoming Challenges Scheduled
+              </h4>
+              <p className="text-xs text-[#71808C]">
+                Check back soon or explore our active challenges!
+              </p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {upcomingChallenges.map((ch) => (
+                <Card key={ch.id} className="p-5 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="blue" size="sm">
+                        Upcoming
+                      </Badge>
+                      <span className="text-xs font-semibold text-[#71808C]">
+                        Starts: {new Date(ch.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-bold text-[#27313A]">
+                      {ch.title}
+                    </h3>
+                    <p className="text-xs text-[#71808C]">
+                      {ch.description || 'Target goal: ' + ch.target_value + ' ' + ch.unit}
+                    </p>
                   </div>
-                  <div className="text-2xl">🏆</div>
-                </div>
-                <div className="pt-2 border-t border-[#BDEFD6] text-xs font-bold text-[#1E7D58]">
-                  {item.badge}
-                </div>
-              </Card>
-            ))}
-          </div>
+
+                  <div className="pt-3 border-t border-[#F4E2E0] flex items-center justify-between">
+                    <span className="text-xs text-[#71808C] flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{ch.participantsCount} Joined</span>
+                    </span>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedChallenge(ch)}
+                      className="text-xs font-bold"
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
+
+      {/* 7. Completed Challenges Tab */}
+      {!loading && !error && activeTab === 'completed' && (
+        <div className="space-y-4">
+          {completedChallenges.length === 0 ? (
+            <Card className="p-8 text-center space-y-3 bg-white border-[#F4E2E0]">
+              <div className="w-12 h-12 rounded-2xl bg-[#DDF7EA] text-[#1E7D58] flex items-center justify-center mx-auto">
+                <Trophy className="w-6 h-6" />
+              </div>
+              <h4 className="text-sm sm:text-base font-bold text-[#27313A]">
+                No Completed Challenges Yet
+              </h4>
+              <p className="text-xs text-[#71808C]">
+                Join an active challenge today to earn your first finisher badge!
+              </p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {completedChallenges.map((ch) => (
+                <Card key={ch.id} className="p-5 space-y-3 bg-white border-[#F4E2E0]">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="mint" size="sm">
+                      Completed
+                    </Badge>
+                    <span className="text-xs text-[#71808C]">
+                      Ended {new Date(ch.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-bold text-[#27313A]">
+                      {ch.title}
+                    </h3>
+                    <p className="text-xs text-[#71808C] mt-0.5">
+                      Goal: {Number(ch.target_value).toLocaleString()} {ch.unit} • {ch.participantsCount} participants
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#F4E2E0] flex items-center justify-between">
+                    {ch.isCompleted ? (
+                      <span className="text-xs font-bold text-[#10B981] flex items-center gap-1">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>You Completed this Challenge! (+100 XP)</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[#71808C]">
+                        {ch.isJoined ? `${ch.progressPercent}% achieved` : 'Did not participate'}
+                      </span>
+                    )}
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedChallenge(ch)}
+                      className="text-xs font-bold text-[#FF6F7D]"
+                    >
+                      Leaderboard →
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Challenge Detail Modal with live leaderboard */}
+      <ChallengeDetailModal
+        challenge={selectedChallenge}
+        isOpen={!!selectedChallenge}
+        onClose={() => setSelectedChallenge(null)}
+        onJoin={joinChallenge}
+        onLeave={leaveChallenge}
+        fetchLeaderboard={fetchChallengeLeaderboard}
+      />
+
+      {/* Create Challenge Modal (Admin/Instructor only) */}
+      <CreateChallengeModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={createChallenge}
+      />
     </div>
   )
 }

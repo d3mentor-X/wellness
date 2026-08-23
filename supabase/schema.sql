@@ -374,6 +374,7 @@ CREATE TABLE IF NOT EXISTS public.challenge_participants (
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   current_value NUMERIC(10,2) NOT NULL DEFAULT 0,
   completed BOOLEAN NOT NULL DEFAULT false,
+  completed_at TIMESTAMPTZ,
   joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT uq_challenge_participant UNIQUE (challenge_id, user_id)
