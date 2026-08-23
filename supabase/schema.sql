@@ -396,8 +396,42 @@ CREATE TABLE IF NOT EXISTS public.activity_feed (
   activity_type TEXT NOT NULL,
   reference_id UUID,
   message TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ----------------------------------------------------------------------------
+-- Table 14b: activity_reactions
+-- Member high-fives and reactions on activity feed items
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.activity_reactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  activity_id UUID NOT NULL REFERENCES public.activity_feed(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  reaction_type TEXT NOT NULL CHECK (reaction_type IN ('heart', 'fire', 'muscle', 'clap')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_user_activity_reaction UNIQUE(activity_id, user_id, reaction_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_reactions_activity ON public.activity_reactions(activity_id);
+CREATE INDEX IF NOT EXISTS idx_activity_reactions_user ON public.activity_reactions(user_id);
+
+-- ----------------------------------------------------------------------------
+-- Table 14c: club_announcements
+-- Instructor & Admin pinned broadcasts for club members
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.club_announcements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  club_id UUID NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
+  author_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  is_pinned BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_club_announcements_club ON public.club_announcements(club_id, created_at DESC);
 
 -- ----------------------------------------------------------------------------
 -- Table 15: chat_messages

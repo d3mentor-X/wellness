@@ -3,6 +3,7 @@ import { useDailyActivity } from '../hooks/useDailyActivity'
 import { useWorkouts } from '../hooks/useWorkouts'
 import { useGamification } from '../hooks/useGamification'
 import { useChallenges } from '../hooks/useChallenges'
+import { useSocial } from '../hooks/useSocial'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -28,6 +29,7 @@ export default function Dashboard({ onNavigate }) {
   const { workouts } = useWorkouts()
   const { totalXp, levelInfo, streakInfo } = useGamification()
   const { userActiveChallenge } = useChallenges()
+  const { momentum, announcements } = useSocial()
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
   const firstName = displayName.split(' ')[0]
@@ -401,21 +403,30 @@ export default function Dashboard({ onNavigate }) {
         >
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <Avatar name="Coach Marcus" size="md" isInstructor />
+              <Avatar
+                name={announcements[0]?.profiles?.full_name || 'Coach Marcus'}
+                src={announcements[0]?.profiles?.avatar_url}
+                size="md"
+                isInstructor
+              />
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h4 className="text-sm font-bold text-[#27313A]">Coach Marcus</h4>
+                  <h4 className="text-sm font-bold text-[#27313A]">
+                    {announcements[0]?.profiles?.full_name || 'Coach Marcus'}
+                  </h4>
                   <Badge variant="coral" size="sm">
                     Instructor
                   </Badge>
                 </div>
-                <p className="text-[11px] text-[#71808C]">Head Coach • Today's Tip</p>
+                <p className="text-[11px] text-[#71808C]">
+                  {announcements[0] ? 'Latest Broadcast' : 'Head Coach • Today\'s Tip'}
+                </p>
               </div>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-white/90 border border-[#FFD9DF] shadow-xs">
               <p className="text-xs text-[#27313A] italic leading-relaxed">
-                "Great work on the step counts yesterday, team! Today is about deliberate recovery and core stability. Keep that streak alive!"
+                "{announcements[0]?.message || 'Great consistency today, team! Stay hydrated and keep your streaks alive in the club challenges!'}"
               </p>
             </div>
           </div>
@@ -440,52 +451,44 @@ export default function Dashboard({ onNavigate }) {
                 <h3 className="text-sm font-bold text-[#27313A]">Club Momentum</h3>
               </div>
               <Badge variant="mint" size="sm">
-                14 Members Active Today
+                {momentum.members_active_today} {momentum.members_active_today === 1 ? 'Member' : 'Members'} Active Today
               </Badge>
             </div>
 
             <p className="text-xs text-[#71808C]">
-              Your club has logged <strong>112,400 steps</strong> and <strong>16 workouts</strong> today!
+              Your club has logged <strong>{Number(momentum.steps_today).toLocaleString()} steps</strong> and <strong>{momentum.workouts_today} workouts</strong> today!
             </p>
 
             {/* Member Avatars Strip */}
-            <div className="flex items-center gap-2 pt-1 overflow-x-auto pb-1">
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <Avatar name="Tariq M" size="sm" status="online" />
-                <span className="text-[10px] font-semibold text-[#27313A]">Tariq</span>
+            {momentum.active_members && momentum.active_members.length > 0 ? (
+              <div className="flex items-center gap-3 pt-1 overflow-x-auto pb-1">
+                {momentum.active_members.slice(0, 7).map((m, i) => (
+                  <div key={m.user_id || i} className="flex flex-col items-center gap-1 shrink-0 group" title={m.action_summary}>
+                    <Avatar name={m.full_name} src={m.avatar_url} size="sm" status="online" />
+                    <span className="text-[10px] font-semibold text-[#27313A] truncate max-w-[55px]">
+                      {m.full_name.split(' ')[0]}
+                    </span>
+                  </div>
+                ))}
+                {momentum.active_members.length > 7 && (
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    <div className="w-8 h-8 rounded-2xl bg-[#FFE5E8] text-[#FF6F7D] font-bold text-xs flex items-center justify-center border border-[#FFCCD2]">
+                      +{momentum.active_members.length - 7}
+                    </div>
+                    <span className="text-[10px] font-semibold text-[#71808C]">More</span>
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <Avatar name="Sarah K" size="sm" status="online" />
-                <span className="text-[10px] font-semibold text-[#27313A]">Sarah</span>
+            ) : (
+              <div className="p-3 bg-[#FFF9F8] rounded-2xl border border-[#F4E2E0] text-xs text-[#71808C] italic">
+                Be the first to log activity today and lead the club momentum!
               </div>
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <Avatar name="Zayd H" size="sm" status="online" />
-                <span className="text-[10px] font-semibold text-[#27313A]">Zayd</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <Avatar name="Omar F" size="sm" status="online" />
-                <span className="text-[10px] font-semibold text-[#27313A]">Omar</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <Avatar name="Amina R" size="sm" status="online" />
-                <span className="text-[10px] font-semibold text-[#27313A]">Amina</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <Avatar name="Bilal S" size="sm" status="online" />
-                <span className="text-[10px] font-semibold text-[#27313A]">Bilal</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <div className="w-8 h-8 rounded-2xl bg-[#FFE5E8] text-[#FF6F7D] font-bold text-xs flex items-center justify-center border border-[#FFCCD2]">
-                  +8
-                </div>
-                <span className="text-[10px] font-semibold text-[#71808C]">More</span>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="pt-3 border-t border-[#F4E2E0] flex items-center justify-between text-xs">
             <span className="text-[#71808C]">
-              Recent: <strong>Sarah K</strong> completed <strong>50 Workouts</strong> badge!
+              {momentum.achievements_count > 0 ? `${momentum.achievements_count} total achievements unlocked in club` : 'Push for new achievements!'}
             </span>
             <Button
               variant="ghost"
