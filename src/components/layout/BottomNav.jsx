@@ -1,13 +1,12 @@
-import { Grid } from 'lucide-react'
-import { NAV_ITEMS } from '../../constants/navigation'
+import { PRIMARY_NAV_ITEMS } from '../../constants/navigation'
 
-export function BottomNav({ activeTab, onNavigate, onOpenDrawer }) {
-  const primaryItems = NAV_ITEMS.filter((item) => item.isPrimaryMobile)
-  const isMoreActive = !primaryItems.some((item) => item.id === activeTab)
-
+export function BottomNav({ activeTab, onNavigate }) {
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-lg border-t border-slate-800/80 px-2 py-1.5 flex items-center justify-around">
-      {primaryItems.map((item) => {
+    <nav
+      aria-label="Mobile floating navigation"
+      className="md:hidden fixed bottom-3 sm:bottom-4 left-0 right-0 z-50 w-[92%] max-w-md mx-auto bg-white/90 backdrop-blur-xl border border-[#F2DCD9] rounded-[24px] p-1.5 px-2 shadow-xl shadow-[#27313A]/10 flex items-center justify-between transition-all"
+    >
+      {PRIMARY_NAV_ITEMS.map((item) => {
         const Icon = item.icon
         const isActive = activeTab === item.id
 
@@ -16,46 +15,27 @@ export function BottomNav({ activeTab, onNavigate, onOpenDrawer }) {
             key={item.id}
             type="button"
             onClick={() => onNavigate(item.id)}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all duration-150 min-w-[60px] cursor-pointer ${
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer active:scale-95 select-none ${
               isActive
-                ? 'text-emerald-400 font-semibold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-[#FF6F7D] font-black'
+                : 'text-[#71808C] hover:text-[#27313A] hover:bg-[#FFF5F4]/70 font-medium'
             }`}
           >
             <div
-              className={`p-1 rounded-lg transition-colors ${
-                isActive ? 'bg-emerald-500/10' : ''
+              className={`p-1.5 rounded-xl transition-all duration-200 ${
+                isActive
+                  ? 'bg-[#FFE5E8] text-[#FF6F7D] scale-110 shadow-xs'
+                  : 'bg-transparent text-[#71808C]'
               }`}
             >
               <Icon className="w-5 h-5" />
             </div>
-            <span className="text-[10px] tracking-tight truncate max-w-[64px]">
+            <span className="text-[10px] tracking-tight truncate max-w-full leading-tight mt-0.5">
               {item.label}
             </span>
           </button>
         )
       })}
-
-      {/* More / All Sections Trigger */}
-      <button
-        type="button"
-        onClick={onOpenDrawer}
-        className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all duration-150 min-w-[60px] cursor-pointer ${
-          isMoreActive
-            ? 'text-emerald-400 font-semibold'
-            : 'text-slate-400 hover:text-slate-200'
-        }`}
-      >
-        <div
-          className={`p-1 rounded-lg transition-colors ${
-            isMoreActive ? 'bg-emerald-500/10' : ''
-          }`}
-        >
-          <Grid className="w-5 h-5" />
-        </div>
-        <span className="text-[10px] tracking-tight">More</span>
-      </button>
     </nav>
   )
 }
-

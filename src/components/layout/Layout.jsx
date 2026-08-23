@@ -1,50 +1,19 @@
-import { useState } from 'react'
-import { Sidebar } from './Sidebar'
-import { Navbar } from './Navbar'
+import { Header } from './Header'
 import { BottomNav } from './BottomNav'
-import { MobileDrawer } from './MobileDrawer'
-import { NAV_ITEMS } from '../../constants/navigation'
 
 export function Layout({ activeTab, onNavigate, children }) {
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
-
-  const activeNavItem = NAV_ITEMS.find((item) => item.id === activeTab) || NAV_ITEMS[0]
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col lg:flex-row">
-      {/* Desktop Navigation Sidebar */}
-      <Sidebar activeTab={activeTab} onNavigate={onNavigate} />
+    <div className="min-h-screen bg-[#FFF9F8] text-[#27313A] flex flex-col selection:bg-[#FFE5E8] selection:text-[#E04B5A]">
+      {/* Top Header Navigation */}
+      <Header activeTab={activeTab} onNavigate={onNavigate} />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navbar */}
-        <Navbar
-          activeNavItem={activeNavItem}
-          onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
-          onNavigate={onNavigate}
-        />
+      {/* Main Content Workspace with generous bottom clearance for floating mobile dock */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-36 sm:pb-40 md:pb-12 animate-fade-in">
+        {children}
+      </main>
 
-        {/* Content View Container */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-
-      {/* Mobile Bottom Navigation */}
-      <BottomNav
-        activeTab={activeTab}
-        onNavigate={onNavigate}
-        onOpenDrawer={() => setIsMobileDrawerOpen(true)}
-      />
-
-      {/* Mobile Full Navigation Drawer */}
-      <MobileDrawer
-        isOpen={isMobileDrawerOpen}
-        onClose={() => setIsMobileDrawerOpen(false)}
-        activeTab={activeTab}
-        onNavigate={onNavigate}
-      />
+      {/* Mobile Floating Bottom Navigation Dock */}
+      <BottomNav activeTab={activeTab} onNavigate={onNavigate} />
     </div>
   )
 }
-

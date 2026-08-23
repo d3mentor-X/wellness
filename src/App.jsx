@@ -1,34 +1,39 @@
 import { useState, useEffect } from 'react'
 import { Layout } from './components/layout/Layout'
+import { getPrimaryNavTab } from './constants/navigation'
 import Dashboard from './pages/Dashboard'
-import Profile from './pages/Profile'
 import Exercise from './pages/Exercise'
+import Goals from './pages/Goals'
+import GroupActivity from './pages/GroupActivity'
+import Profile from './pages/Profile'
 import FoodCalories from './pages/FoodCalories'
 import Steps from './pages/Steps'
 import Spirituality from './pages/Spirituality'
-import Goals from './pages/Goals'
-import GroupActivity from './pages/GroupActivity'
 import Leaderboard from './pages/Leaderboard'
 import AICoach from './pages/AICoach'
 import Settings from './pages/Settings'
 
-const PAGES = {
+const ROUTE_COMPONENTS = {
   dashboard: Dashboard,
+  home: Dashboard,
+  progress: Exercise,
   exercise: Exercise,
+  challenges: Goals,
+  goals: Goals,
+  community: GroupActivity,
+  'group-activity': GroupActivity,
+  profile: Profile,
   'food-calories': FoodCalories,
   steps: Steps,
   spirituality: Spirituality,
-  goals: Goals,
-  'group-activity': GroupActivity,
   leaderboard: Leaderboard,
   'ai-coach': AICoach,
-  profile: Profile,
   settings: Settings,
 }
 
 function getInitialTab() {
   const hash = window.location.hash.replace(/^#\/?/, '')
-  return PAGES[hash] ? hash : 'dashboard'
+  return ROUTE_COMPONENTS[hash] ? hash : 'dashboard'
 }
 
 export default function App() {
@@ -37,7 +42,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace(/^#\/?/, '')
-      if (PAGES[hash]) {
+      if (ROUTE_COMPONENTS[hash]) {
         setActiveTab(hash)
       }
     }
@@ -52,11 +57,12 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const ActiveComponent = PAGES[activeTab] || Dashboard
+  const ActiveComponent = ROUTE_COMPONENTS[activeTab] || Dashboard
+  const primaryNavTab = getPrimaryNavTab(activeTab)
 
   return (
-    <Layout activeTab={activeTab} onNavigate={handleNavigate}>
-      <ActiveComponent />
+    <Layout activeTab={primaryNavTab} onNavigate={handleNavigate}>
+      <ActiveComponent onNavigate={handleNavigate} />
     </Layout>
   )
 }

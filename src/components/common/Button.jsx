@@ -10,23 +10,27 @@ export function Button({
   ...props
 }) {
   const baseStyles =
-    'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
+    'inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF6F7D] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer'
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-xs rounded-lg gap-1.5',
-    md: 'px-4 py-2 text-sm rounded-xl gap-2',
-    lg: 'px-5 py-2.5 text-base rounded-xl gap-2.5',
+    sm: 'px-3 py-1.5 text-xs rounded-xl gap-1.5',
+    md: 'px-4 py-2.5 text-sm rounded-2xl gap-2 shadow-sm',
+    lg: 'px-6 py-3 text-base rounded-2xl gap-2.5 shadow-md',
   }
 
   const variantStyles = {
     primary:
-      'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold focus:ring-emerald-500 shadow-sm shadow-emerald-950',
+      'bg-[#FF6F7D] hover:bg-[#F25A69] text-white shadow-[#FF6F7D]/25 hover:shadow-md hover:shadow-[#FF6F7D]/30 hover:-translate-y-0.5',
     secondary:
-      'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 focus:ring-slate-600',
+      'bg-[#FFE5E8] hover:bg-[#FFD4D9] text-[#E04B5A] hover:-translate-y-0.5',
+    mint:
+      'bg-[#DDF7EA] hover:bg-[#C8F0DC] text-[#1E7D58] hover:-translate-y-0.5',
+    blue:
+      'bg-[#E3F0FF] hover:bg-[#CFE5FF] text-[#2563EB] hover:-translate-y-0.5',
     outline:
-      'bg-transparent hover:bg-slate-800/60 text-slate-300 border border-slate-700/80 hover:border-slate-600 focus:ring-slate-500',
+      'bg-white hover:bg-[#FFF5F4] text-[#27313A] border border-[#F3DCD9] hover:border-[#FFB5BC] hover:-translate-y-0.5',
     ghost:
-      'bg-transparent hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 focus:ring-slate-500',
+      'bg-transparent hover:bg-[#FFE5E8]/60 text-[#71808C] hover:text-[#27313A]',
   }
 
   return (
@@ -44,4 +48,3 @@ export function Button({
     </button>
   )
 }
-

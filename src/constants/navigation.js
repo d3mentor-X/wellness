@@ -1,111 +1,100 @@
 import {
-  LayoutDashboard,
+  Flame,
+  TrendingUp,
+  Target,
+  Users,
   User,
-  Dumbbell,
   Utensils,
   Footprints,
   Sparkles,
-  Target,
-  Users,
   Trophy,
   Bot,
   Settings as SettingsIcon,
 } from 'lucide-react'
 
-export const NAVIGATION_CATEGORIES = {
-  DAILY: 'Daily Tracking',
-  COMMUNITY: 'Group & Progress',
-  ACCOUNT: 'Preferences',
-}
-
-export const NAV_ITEMS = [
+export const PRIMARY_NAV_ITEMS = [
   {
     id: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    category: NAVIGATION_CATEGORIES.DAILY,
-    description: 'Overview of your daily metrics, group progress, and active streak.',
-    isPrimaryMobile: true,
+    label: 'Home',
+    icon: Flame,
+    badge: 'Today',
   },
   {
-    id: 'exercise',
-    label: 'Exercise',
-    icon: Dumbbell,
-    category: NAVIGATION_CATEGORIES.DAILY,
-    description: 'Log and track workouts, sets, duration, and exercise history.',
-    isPrimaryMobile: true,
+    id: 'progress',
+    label: 'Progress',
+    icon: TrendingUp,
+    badge: null,
   },
+  {
+    id: 'challenges',
+    label: 'Challenges',
+    icon: Target,
+    badge: 'Active',
+  },
+  {
+    id: 'community',
+    label: 'Community',
+    icon: Users,
+    badge: null,
+  },
+  {
+    id: 'profile',
+    label: 'Profile',
+    icon: User,
+    badge: null,
+  },
+]
+
+export const SECONDARY_NAV_ITEMS = [
   {
     id: 'food-calories',
-    label: 'Food & Calories',
+    label: 'Nutrition & Macros',
     icon: Utensils,
-    category: NAVIGATION_CATEGORIES.DAILY,
-    description: 'Monitor daily meals, macros, and calorie targets.',
-    isPrimaryMobile: true,
+    parent: 'progress',
+    description: 'Track meals, calories, and daily macronutrient targets.',
   },
   {
     id: 'steps',
-    label: 'Steps',
+    label: 'Steps & Walking',
     icon: Footprints,
-    category: NAVIGATION_CATEGORIES.DAILY,
-    description: 'Daily step counter, distance tracking, and walking goals.',
-    isPrimaryMobile: false,
+    parent: 'progress',
+    description: 'Daily step goals, distance, and walking consistency.',
   },
   {
     id: 'spirituality',
-    label: 'Spirituality',
+    label: 'Mindfulness & Prayer',
     icon: Sparkles,
-    category: NAVIGATION_CATEGORIES.DAILY,
-    description: 'Daily reflection, gratitude, mindfulness, and spiritual habits.',
-    isPrimaryMobile: false,
-  },
-  {
-    id: 'goals',
-    label: 'Goals',
-    icon: Target,
-    category: NAVIGATION_CATEGORIES.COMMUNITY,
-    description: 'Personal targets, group challenges, and milestone tracking.',
-    isPrimaryMobile: false,
-  },
-  {
-    id: 'group-activity',
-    label: 'Group Activity',
-    icon: Users,
-    category: NAVIGATION_CATEGORIES.COMMUNITY,
-    description: 'Live activity feed, member updates, and community encouragement.',
-    isPrimaryMobile: false,
+    parent: 'profile',
+    description: 'Daily reflection, gratitude, and spiritual habits.',
   },
   {
     id: 'leaderboard',
     label: 'Leaderboard',
     icon: Trophy,
-    category: NAVIGATION_CATEGORIES.COMMUNITY,
-    description: 'Weekly rankings, points, streaks, and healthy group competition.',
-    isPrimaryMobile: true,
+    parent: 'community',
+    description: 'Weekly club rankings, streaks, and healthy competition.',
   },
   {
     id: 'ai-coach',
     label: 'AI Coach',
     icon: Bot,
-    category: NAVIGATION_CATEGORIES.COMMUNITY,
-    description: 'Intelligent recommendations, habit analysis, and fitness guidance.',
-    isPrimaryMobile: false,
-  },
-  {
-    id: 'profile',
-    label: 'My Profile',
-    icon: User,
-    category: NAVIGATION_CATEGORIES.ACCOUNT,
-    description: 'Personal stats, biometric details, badges, and fitness history.',
-    isPrimaryMobile: false,
+    parent: 'dashboard',
+    description: 'Personalized workout feedback and smart recommendations.',
   },
   {
     id: 'settings',
     label: 'Settings',
     icon: SettingsIcon,
-    category: NAVIGATION_CATEGORIES.ACCOUNT,
-    description: 'App preferences, notifications, privacy, and account configuration.',
-    isPrimaryMobile: false,
+    parent: 'profile',
+    description: 'Manage preferences, units, and notifications.',
   },
 ]
 
+export function getPrimaryNavTab(route) {
+  if (['dashboard', 'home'].includes(route)) return 'dashboard'
+  if (['progress', 'exercise', 'food-calories', 'steps'].includes(route)) return 'progress'
+  if (['challenges', 'goals'].includes(route)) return 'challenges'
+  if (['community', 'group-activity', 'leaderboard'].includes(route)) return 'community'
+  if (['profile', 'spirituality', 'settings'].includes(route)) return 'profile'
+  return 'dashboard'
+}
