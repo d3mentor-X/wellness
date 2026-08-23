@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../context/useAuth'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -19,22 +20,39 @@ import {
 } from 'lucide-react'
 
 export default function Dashboard({ onNavigate }) {
+  const { user, profile, membership } = useAuth()
   const [workoutChecked, setWorkoutChecked] = useState(true)
   const [waterGlasses, setWaterGlasses] = useState(6)
+
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
+  const firstName = displayName.split(' ')[0]
+  const userRole = membership?.role || 'member'
+  const roleLabel =
+    userRole === 'admin'
+      ? 'Club Admin'
+      : userRole === 'instructor'
+      ? 'Instructor'
+      : 'Member'
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* 1. Friendly Greeting & Streak Hero Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-white via-[#FFF5F6] to-white p-5 sm:p-6 rounded-3xl border border-[#F4E2E0] shadow-xs">
         <div className="flex items-center gap-4">
-          <Avatar name="Alex Rivera" size="lg" status="online" />
+          <Avatar
+            name={displayName}
+            src={profile?.avatar_url}
+            size="lg"
+            status="online"
+            isInstructor={userRole === 'instructor' || userRole === 'admin'}
+          />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-black text-[#27313A] tracking-tight">
-                Good morning, Alex 👋
+                Good morning, {firstName} 👋
               </h1>
-              <Badge variant="coral" size="sm">
-                Member
+              <Badge variant={userRole === 'admin' ? 'coral' : 'blue'} size="sm">
+                {roleLabel}
               </Badge>
             </div>
             <p className="text-xs sm:text-sm text-[#71808C]">
@@ -42,6 +60,7 @@ export default function Dashboard({ onNavigate }) {
             </p>
           </div>
         </div>
+
 
         {/* Streak & XP Concept */}
         <div className="flex items-center gap-3 self-start sm:self-center">
