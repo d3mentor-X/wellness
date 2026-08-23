@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '../common/Card'
 import { Button } from '../common/Button'
 import {
@@ -29,6 +29,15 @@ export function CreateChallengeModal({ isOpen, onClose, onCreate }) {
   const [endDate, setEndDate] = useState(defaultEndStr)
   const [saving, setSaving] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 

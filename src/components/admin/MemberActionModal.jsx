@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '../common/Card'
 import { Button } from '../common/Button'
 import { Avatar } from '../common/Avatar'
@@ -25,6 +25,15 @@ export function MemberActionModal({
 }) {
   const [reason, setReason] = useState('')
   const [muteMinutes, setMuteMinutes] = useState(60)
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   if (!isOpen || !member) return null
 

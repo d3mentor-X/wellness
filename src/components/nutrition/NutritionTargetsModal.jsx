@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '../common/Card'
 import { Button } from '../common/Button'
 import { Target, X, Save } from 'lucide-react'
@@ -14,6 +14,15 @@ export function NutritionTargetsModal({
   const [protein, setProtein] = useState(String(targets.protein || 150))
   const [carbs, setCarbs] = useState(String(targets.carbs || 250))
   const [fat, setFat] = useState(String(targets.fat || 70))
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 

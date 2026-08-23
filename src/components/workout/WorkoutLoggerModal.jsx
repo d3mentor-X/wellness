@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '../common/Card'
 import { Button } from '../common/Button'
 import { Badge } from '../common/Badge'
@@ -27,6 +27,15 @@ const WORKOUT_PRESETS = [
 
 export function WorkoutLoggerModal({ isOpen, onClose, onSave }) {
   const { exercises: availableExercises } = useExercises()
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   const [workoutName, setWorkoutName] = useState('Upper Body Strength')
   const [durationMinutes, setDurationMinutes] = useState('45')

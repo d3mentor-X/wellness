@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Card } from '../common/Card'
 import { Badge } from '../common/Badge'
 import { Button } from '../common/Button'
@@ -11,6 +12,15 @@ import {
 } from 'lucide-react'
 
 export function WorkoutDetailModal({ workout, isOpen, onClose, onDelete }) {
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen || !workout) return null
 
   const formattedDate = workout.workout_date

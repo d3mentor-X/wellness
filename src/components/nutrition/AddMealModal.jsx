@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '../common/Card'
 import { Button } from '../common/Button'
 import {
@@ -39,6 +39,15 @@ export function AddMealModal({
   const [protein, setProtein] = useState('0')
   const [carbs, setCarbs] = useState('0')
   const [fat, setFat] = useState('0')
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 
