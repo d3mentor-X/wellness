@@ -18,6 +18,7 @@ import Spirituality from './pages/Spirituality'
 import Leaderboard from './pages/Leaderboard'
 import AICoach from './pages/AICoach'
 import Settings from './pages/Settings'
+import Admin from './pages/Admin'
 
 const ROUTE_COMPONENTS = {
   dashboard: Dashboard,
@@ -35,6 +36,8 @@ const ROUTE_COMPONENTS = {
   leaderboard: Leaderboard,
   'ai-coach': AICoach,
   settings: Settings,
+  admin: Admin,
+  manage: Admin,
 }
 
 function getInitialTab() {

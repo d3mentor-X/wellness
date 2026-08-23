@@ -158,6 +158,7 @@ CREATE TABLE IF NOT EXISTS public.exercises (
   muscle_group TEXT,
   equipment TEXT,
   description TEXT,
+  is_archived BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -432,6 +433,22 @@ CREATE TABLE IF NOT EXISTS public.club_announcements (
 );
 
 CREATE INDEX IF NOT EXISTS idx_club_announcements_club ON public.club_announcements(club_id, created_at DESC);
+
+-- ----------------------------------------------------------------------------
+-- Table 14d: moderation_logs
+-- Audit trail of admin and instructor actions
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.moderation_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  club_id UUID NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
+  actor_user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  target_user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  action_type TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_moderation_logs_club ON public.moderation_logs(club_id, created_at DESC);
 
 -- ----------------------------------------------------------------------------
 -- Table 15: chat_messages

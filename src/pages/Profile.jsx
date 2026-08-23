@@ -25,6 +25,7 @@ import {
   Flame,
   Footprints,
   Dumbbell,
+  Shield,
 } from 'lucide-react'
 
 export default function Profile({ onNavigate }) {
@@ -291,6 +292,44 @@ export default function Profile({ onNavigate }) {
             </form>
           </Card>
         </div>
+      )}
+
+      {/* 1b. Admin & Instructor Management Hub Banner */}
+      {(userRole === 'admin' || isInstructor) && (
+        <Card
+          variant="coralTint"
+          className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-[#FFCCD2]"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FF6F7D] text-white flex items-center justify-center shadow-md shadow-[#FF6F7D]/20">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-[#27313A]">
+                  {userRole === 'admin' ? 'Club Administration Hub' : 'Instructor Management Tools'}
+                </h3>
+                <Badge variant={userRole === 'admin' ? 'coral' : 'blue'} size="sm">
+                  {userRole === 'admin' ? '👑 Admin' : '🏋️ Instructor'}
+                </Badge>
+              </div>
+              <p className="text-xs text-[#71808C]">
+                {userRole === 'admin'
+                  ? 'Manage memberships, moderate members, configure club settings, and library.'
+                  : 'Manage exercises, post broadcasts, create challenges, and monitor momentum.'}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onNavigate?.('admin')}
+            className="text-xs font-bold shrink-0 self-start sm:self-center"
+          >
+            Open Management Console →
+          </Button>
+        </Card>
       )}
 
       {/* 2. Level & XP Progression */}
