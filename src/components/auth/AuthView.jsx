@@ -115,7 +115,7 @@ export function AuthView() {
             <Flame className="w-7 h-7 fill-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#27313A] tracking-tight">
-            Fitness Club
+            Wellness
           </h1>
           <p className="text-xs sm:text-sm text-[#71808C] font-medium flex items-center justify-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#FF6F7D]" />

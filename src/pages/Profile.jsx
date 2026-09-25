@@ -118,7 +118,7 @@ export default function Profile({ onNavigate }) {
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{user?.email}</span>
                 <span>•</span>
-                <span>Fitness Club</span>
+                <span>Wellness</span>
               </p>
               {profile?.whatsapp_number && (
                 <p className="text-xs text-[#71808C] flex items-center gap-1">

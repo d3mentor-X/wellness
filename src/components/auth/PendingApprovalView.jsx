@@ -66,7 +66,7 @@ export function PendingApprovalView() {
             <p className="text-xs sm:text-sm text-[#71808C] leading-relaxed">
               {isSuspended
                 ? 'Your access to the private club is currently suspended. Please contact your club administrator.'
-                : 'Welcome to Fitness Club! This is a private, member-only community. Your account has been registered, and a club administrator will activate your membership shortly.'}
+                : 'Welcome to Wellness! This is a private, member-only community. Your account has been registered, and a club administrator will activate your membership shortly.'}
             </p>
           </div>
 

@@ -10,6 +10,7 @@ import { useWorkouts } from '../hooks/useWorkouts'
 import { useGamification } from '../hooks/useGamification'
 import { useChallenges } from '../hooks/useChallenges'
 import { useNutrition } from '../hooks/useNutrition'
+import { useHealth } from '../hooks/useHealth'
 import {
   Dumbbell,
   Plus,
@@ -23,6 +24,7 @@ import {
   Target,
   ArrowUpRight,
   Eye,
+  Moon,
 } from 'lucide-react'
 
 export default function Exercise({ onNavigate }) {
@@ -30,6 +32,7 @@ export default function Exercise({ onNavigate }) {
   const { streakInfo, syncGamification } = useGamification()
   const { activeChallenges } = useChallenges()
   const { summary: nutritionSummary } = useNutrition()
+  const { currentLog: healthLog } = useHealth()
   const [isLoggerOpen, setIsLoggerOpen] = useState(false)
   const [selectedWorkoutDetail, setSelectedWorkoutDetail] = useState(null)
 
@@ -209,6 +212,27 @@ export default function Exercise({ onNavigate }) {
                 {nutritionSummary.totals.calories > 0
                   ? `${Math.round(nutritionSummary.totals.calories)} / ${nutritionSummary.targets.calories} kcal`
                   : 'Track daily calories & macros'}
+              </p>
+            </div>
+          </div>
+          <ArrowUpRight className="w-4 h-4 text-[#71808C] group-hover:text-[#FF6F7D] transition-colors" />
+        </Card>
+
+        <Card
+          hover
+          onClick={() => onNavigate?.('health')}
+          className="p-4 flex items-center justify-between group cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#EDE9FE] text-[#7C3AED] flex items-center justify-center">
+              <Moon className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-[#27313A]">Sleep & Screen Time</h4>
+              <p className="text-[11px] text-[#71808C]">
+                {healthLog?.sleep_minutes !== null && healthLog?.sleep_minutes !== undefined
+                  ? `${Math.floor(healthLog.sleep_minutes / 60)}h ${healthLog.sleep_minutes % 60}m sleep`
+                  : 'Track rest & digital wellness'}
               </p>
             </div>
           </div>

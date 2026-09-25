@@ -32,7 +32,7 @@ export function Header({ activeTab, onNavigate }) {
           </div>
           <div>
             <span className="text-base font-extrabold tracking-tight text-[#27313A] group-hover:text-[#FF6F7D] transition-colors">
-              Fitness Club
+              Wellness
             </span>
             <div className="flex items-center gap-1 text-[10px] font-bold text-[#FF6F7D] tracking-wide uppercase">
               <Sparkles className="w-2.5 h-2.5" />

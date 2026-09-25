@@ -19,6 +19,7 @@ import Leaderboard from './pages/Leaderboard'
 import AICoach from './pages/AICoach'
 import Settings from './pages/Settings'
 import Admin from './pages/Admin'
+import Health from './pages/Health'
 
 const ROUTE_COMPONENTS = {
   dashboard: Dashboard,
@@ -32,6 +33,7 @@ const ROUTE_COMPONENTS = {
   profile: Profile,
   'food-calories': FoodCalories,
   steps: Steps,
+  health: Health,
   spirituality: Spirituality,
   leaderboard: Leaderboard,
   'ai-coach': AICoach,
@@ -75,7 +77,7 @@ function AppContent() {
           <Flame className="w-7 h-7 fill-white" />
         </div>
         <p className="text-xs font-bold text-[#71808C] tracking-wide uppercase">
-          Loading Fitness Club...
+          Loading Wellness...
         </p>
       </div>
     )

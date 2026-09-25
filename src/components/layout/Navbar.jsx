@@ -29,7 +29,7 @@ export function Navbar({
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Private Fitness Group
+              Private Wellness Community
             </p>
           </div>
         </div>

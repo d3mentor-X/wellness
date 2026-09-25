@@ -17,7 +17,7 @@ export function Sidebar({ activeTab, onNavigate }) {
         </div>
         <div>
           <h2 className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-            Fitness Group
+            Wellness
           </h2>
           <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
             <ShieldCheck className="w-3 h-3" />

@@ -10,6 +10,7 @@ import {
   Trophy,
   Bot,
   Settings as SettingsIcon,
+  Moon,
 } from 'lucide-react'
 
 export const PRIMARY_NAV_ITEMS = [
@@ -61,6 +62,13 @@ export const SECONDARY_NAV_ITEMS = [
     description: 'Daily step goals, distance, and walking consistency.',
   },
   {
+    id: 'health',
+    label: 'Sleep & Screen Time',
+    icon: Moon,
+    parent: 'progress',
+    description: 'Daily sleep tracking, screen time monitoring, and digital wellness.',
+  },
+  {
     id: 'spirituality',
     label: 'Mindfulness & Prayer',
     icon: Sparkles,
@@ -92,7 +100,7 @@ export const SECONDARY_NAV_ITEMS = [
 
 export function getPrimaryNavTab(route) {
   if (['dashboard', 'home'].includes(route)) return 'dashboard'
-  if (['progress', 'exercise', 'food-calories', 'steps'].includes(route)) return 'progress'
+  if (['progress', 'exercise', 'food-calories', 'steps', 'health'].includes(route)) return 'progress'
   if (['challenges', 'goals'].includes(route)) return 'challenges'
   if (['community', 'group-activity', 'leaderboard'].includes(route)) return 'community'
   if (['profile', 'spirituality', 'settings'].includes(route)) return 'profile'

@@ -169,7 +169,7 @@ export default function GroupActivity({ onNavigate }) {
         <div className="space-y-4">
           <SectionHeader
             title="Club Member Directory"
-            subtitle="Verified active members of your private fitness club."
+            subtitle="Verified active members of your private Wellness community."
             icon={Users}
           />
           <MemberDirectory
@@ -193,7 +193,7 @@ export default function GroupActivity({ onNavigate }) {
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-[#27313A]">
-                    Official Fitness Club WhatsApp Group
+                    Official Wellness WhatsApp Group
                   </h3>
                   <Badge variant="mint" size="sm">
                     Casual Banter

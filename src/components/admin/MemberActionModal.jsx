@@ -51,7 +51,7 @@ export function MemberActionModal({
       case 'suspend':
         return {
           title: `Suspend Member`,
-          desc: `Temporarily restrict ${member.full_name}'s access to the fitness club. Their historical data is preserved.`,
+          desc: `Temporarily restrict ${member.full_name}'s access to the Wellness community. Their historical data is preserved.`,
           icon: UserMinus,
           iconColor: 'text-[#F59E0B] bg-[#FEF3C7]',
           btnText: 'Suspend Access',

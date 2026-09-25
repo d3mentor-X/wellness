@@ -5,6 +5,7 @@ import { useGamification } from '../hooks/useGamification'
 import { useChallenges } from '../hooks/useChallenges'
 import { useSocial } from '../hooks/useSocial'
 import { useNutrition } from '../hooks/useNutrition'
+import { useHealth } from '../hooks/useHealth'
 import { Card } from '../components/common/Card'
 import { Badge } from '../components/common/Badge'
 import { Button } from '../components/common/Button'
@@ -23,6 +24,7 @@ import {
   Zap,
   ChevronRight,
   Utensils,
+  Moon,
 } from 'lucide-react'
 
 export default function Dashboard({ onNavigate }) {
@@ -33,6 +35,7 @@ export default function Dashboard({ onNavigate }) {
   const { userActiveChallenge } = useChallenges()
   const { momentum, announcements } = useSocial()
   const { summary: nutritionSummary } = useNutrition()
+  const { currentLog: healthLog } = useHealth()
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Member'
   const firstName = displayName.split(' ')[0]
@@ -337,6 +340,23 @@ export default function Dashboard({ onNavigate }) {
                   </span>
                 </div>
 
+                <div
+                  onClick={() => onNavigate?.('health')}
+                  className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#FAF5FF] border border-[#F3E8FF] cursor-pointer hover:bg-[#F3E8FF]/60 transition-all"
+                >
+                  <span className="font-semibold text-[#27313A] flex items-center gap-1">
+                    <Moon className="w-3.5 h-3.5 text-[#7C3AED]" />
+                    <span>Sleep & Screen</span>
+                  </span>
+                  <span className="font-bold text-[#7C3AED]">
+                    {healthLog?.sleep_minutes !== null && healthLog?.sleep_minutes !== undefined
+                      ? `${Math.floor(healthLog.sleep_minutes / 60)}h ${healthLog.sleep_minutes % 60}m`
+                      : healthLog?.screen_time_minutes !== null && healthLog?.screen_time_minutes !== undefined
+                      ? `${Math.floor(healthLog.screen_time_minutes / 60)}h ${healthLog.screen_time_minutes % 60}m screen`
+                      : 'Log Health →'}
+                  </span>
+                </div>
+
                 <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#F5FAFF] border border-[#E3F0FF]">
                   <span className="font-semibold text-[#27313A]">✨ Reflection & Prayer</span>
                   <span className="font-bold text-[#2563EB]">Active Daily</span>
@@ -347,10 +367,10 @@ export default function Dashboard({ onNavigate }) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onNavigate?.('food-calories')}
+              onClick={() => onNavigate?.('health')}
               className="w-full text-xs font-bold text-[#FF6F7D] justify-center"
             >
-              <span>Track Food & Nutrition</span>
+              <span>View Health & Wellbeing</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           </Card>
@@ -548,6 +568,15 @@ export default function Dashboard({ onNavigate }) {
             className="shrink-0 text-xs font-bold"
           >
             🥗 Log Meal
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onNavigate?.('health')}
+            icon={Moon}
+            className="shrink-0 text-xs font-bold"
+          >
+            Sleep & Screen
           </Button>
           <Button
             variant="outline"
